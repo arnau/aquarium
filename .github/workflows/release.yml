@@ -1,0 +1,50 @@
+name: release
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build:
+    name: ${{ matrix.job.os }} (${{ matrix.job.target }})
+    runs-on: ${{ matrix.job.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        job:
+          - { artifact_name: aquarium,     os: ubuntu-latest,  target: x86_64-unknown-linux-musl }
+          # - { artifact_name: aquarium,     os: ubuntu-latest,  target: x86_64-unknown-linux-gnu }
+          # - { artifact_name: aquarium,     os: macos-latest,   target: x86_64-apple-darwin }
+          # - { artifact_name: aquarium.exe, os: windows-latest, target: x86_64-pc-windows-gnu }
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Install prerequisites
+      shell: bash
+      run: |
+        case ${{ matrix.job.target }} in
+          x86_64-unknown-linux-musl) sudo apt-get -y update ; sudo apt-get -y install musl-tools ;;
+        esac
+
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: ${{ matrix.job.target }}
+        override: true
+        profile: minimal
+
+    - name: Build
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --release --target=${{ matrix.job.target }}
+
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: target/${{ matrix.job.target }}/release/${{ matrix.job.artifact_name }}
+        asset_name: ${{ matrix.job.target }}_${{ matrix.job.artifact_name }}
+        tag: ${{ github.ref }}
