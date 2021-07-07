@@ -1,134 +1,92 @@
 use anyhow::Result;
-use pulldown_cmark::{escape::StrWrite, Event, Parser, Tag};
-use thiserror::Error;
+use lazy_static::lazy_static;
+use regex::Regex;
+use std::str::FromStr;
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum ExtractState {
-    Pending,
-    Active,
-    Done,
+mod extract;
+
+lazy_static! {
+    static ref FRONTMATTER_RE: Regex =
+        Regex::new(r"^\s*---(\r?\n(?s).*?(?-s))---\r?\n?((?s).*(?-s))$").unwrap();
 }
 
-/// A state machine to track the extraction of a piece from a Markdown text.
+/// Represents a Markdown blob.
 ///
-/// See [`take_title`].
-#[derive(Debug, Clone, PartialEq)]
-pub struct Extract<'a, I: Iterator<Item = Event<'a>>, W> {
-    iter: I,
-    writer: W,
-    state: ExtractState,
+/// It expects a frontmatter in YAML, a title (i.e. H1) and a summary terminated by `<!-- body -->`.
+#[derive(Debug, Clone)]
+pub struct Markdown {
+    pub(crate) frontmatter: String,
+    pub(crate) title: String,
+    pub(crate) summary: Option<String>,
+    pub(crate) body: String,
 }
 
-impl<'a, I, W> Extract<'a, I, W>
-where
-    I: Iterator<Item = Event<'a>>,
-    W: StrWrite,
-{
-    pub fn new(iter: I, writer: W) -> Self {
-        Self {
-            iter,
-            writer,
-            state: ExtractState::Pending,
-        }
-    }
+impl FromStr for Markdown {
+    type Err = anyhow::Error;
 
-    pub fn next(&mut self) -> Option<Event<'a>> {
-        self.iter.next()
-    }
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let blob = input.to_string();
+        let (frontmatter, body) = take_frontmatter(&blob)?;
+        let (title, body) = take_title(body)?;
+        let (summary, body) = take_summary(&body);
 
-    pub fn activate(&mut self) {
-        if let ExtractState::Pending = self.state {
-            self.state = ExtractState::Active;
-        }
-    }
-
-    pub fn append(&mut self, fragment: &str) -> Result<()> {
-        if let ExtractState::Active = self.state {
-            self.writer.write_str(fragment)?;
-        }
-
-        Ok(())
-    }
-
-    pub fn finish(&mut self) {
-        if let ExtractState::Active = self.state {
-            self.state = ExtractState::Done;
-        }
-    }
-
-    pub fn is_done(&self) -> bool {
-        ExtractState::Done == self.state
-    }
-
-    pub fn is_active(&self) -> bool {
-        ExtractState::Active == self.state
+        Ok(Self {
+            frontmatter: frontmatter.into(),
+            title,
+            summary,
+            body,
+        })
     }
 }
 
-#[derive(Debug, Clone, Error)]
-pub enum ExtractError {
-    #[error("Could not find a title in the given markdown text.")]
-    NotFound,
-}
-
-/// Extracts the title (i.e. first h1) from a markdown text.
-pub fn take_title<'a>(text: &str) -> Result<String> {
-    let parser = Parser::new(text);
-    let mut recipient = String::new();
-    let mut extract = Extract::new(parser, &mut recipient);
-
-    while let Some(event) = extract.next() {
-        match event {
-            Event::Start(Tag::Heading(1)) => {
-                if extract.is_done() {
-                    break;
-                }
-                extract.activate();
-            }
-            Event::End(Tag::Heading(1)) => {
-                &extract.finish();
-            }
-            Event::Start(Tag::Emphasis) | Event::End(Tag::Emphasis) => {
-                if extract.is_active() {
-                    extract.append("_")?;
-                }
-            }
-            Event::Start(Tag::Strong) | Event::End(Tag::Strong) => {
-                if extract.is_active() {
-                    extract.append("**")?;
-                }
-            }
-            Event::Code(ref text) => {
-                if extract.is_active() {
-                    extract.append("`")?;
-                    extract.append(text)?;
-                    extract.append("`")?;
-                }
-            }
-            Event::Text(ref text) => {
-                if extract.is_active() {
-                    extract.append(text)?;
-                }
-            }
-            _ => (),
-        }
+impl Markdown {
+    pub fn frontmatter(&self) -> &str {
+        &self.frontmatter
     }
 
-    if !extract.is_done() {
-        return Err(ExtractError::NotFound.into());
+    pub fn body(&self) -> &str {
+        &self.body
     }
 
-    Ok(recipient)
+    pub fn title(&self) -> &str {
+        &self.title
+    }
+
+    pub fn summary(&self) -> Option<&String> {
+        self.summary.as_ref()
+    }
+
+    pub fn to_tuple(self) -> (String, String, Option<String>, String) {
+        (self.frontmatter, self.title, self.summary, self.body)
+    }
 }
 
-pub fn split_title(input: &str) -> Result<(String, String)> {
-    let title = take_title(input)?;
+fn take_frontmatter(blob: &str) -> Result<(&str, &str)> {
+    let groups = FRONTMATTER_RE
+        .captures(blob)
+        .expect("frontmatter split failure");
+    let frontmatter = groups.get(1).expect("group frontmatter missing").as_str();
+    let content = groups.get(2).expect("group content missing").as_str();
+
+    Ok((frontmatter, content))
+}
+
+fn take_title(input: &str) -> Result<(String, String)> {
+    let title = extract::take_title(input)?;
 
     if let Some((_, rest)) = input.split_once(&format!("# {}", &title)) {
         return Ok((title, rest.trim().into()));
     }
 
-    Err(ExtractError::NotFound.into())
+    Err(extract::ExtractError::NotFound.into())
+}
+
+fn take_summary(input: &str) -> (Option<String>, String) {
+    if let Some((summary, body)) = input.split_once("<!-- body -->") {
+        (Some(summary.trim().into()), body.trim().into())
+    } else {
+        (None, input.into())
+    }
 }
 
 #[cfg(test)]
@@ -136,49 +94,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn extract_plain_title() -> Result<()> {
-        let text = r#"# Nineteen Eighty-Four, George Orwell (1949)
+    fn basic() -> Result<()> {
+        let raw = r#"
+---
+foo: bar
+---
+# Title
 
-It was a bright cold day in April, and the clocks were striking thirteen."#;
-        let expected = "Nineteen Eighty-Four, George Orwell (1949)";
-        let actual = take_title(text)?;
+Summary
 
-        assert_eq!(&actual, expected);
-        Ok(())
-    }
+<!-- body -->
 
-    #[test]
-    fn extract_rich_title() -> Result<()> {
-        let text = r#"# Nineteen Eighty-Four, _George Orwell_ (**1949**)
+Body.
+        "#;
+        let actual = Markdown::from_str(raw)?;
 
-It was a bright cold day in April, and the clocks were striking thirteen."#;
-        let expected = "Nineteen Eighty-Four, _George Orwell_ (**1949**)";
-        let actual = take_title(text)?;
+        assert_eq!(actual.title(), "Title");
+        assert_eq!(actual.summary(), Some(&"Summary".into()));
+        assert_eq!(actual.body(), "Body.");
 
-        assert_eq!(&actual, expected);
-        Ok(())
-    }
-
-    #[test]
-    fn no_title() {
-        let text = r#"It was a bright cold day in April, and the clocks were striking thirteen."#;
-        let actual = take_title(text);
-
-        assert!(actual.is_err(), "error when no title found");
-    }
-
-    #[test]
-    fn split_title_and_content() -> Result<()> {
-        let text = r#"# Nineteen Eighty-Four
-
-It was a bright cold day in April, and the clocks were striking thirteen."#;
-        let expected = (
-            "Nineteen Eighty-Four".into(),
-            "It was a bright cold day in April, and the clocks were striking thirteen.".into(),
-        );
-        let actual = split_title(text)?;
-
-        assert_eq!(actual, expected);
         Ok(())
     }
 }

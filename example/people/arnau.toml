@@ -1,0 +1,15 @@
+type = "person"
+id = "arnau"
+name = "Arnau Siches"
+
+[[accounts]]
+id = "github"
+service_name = "Github"
+name = "@arnau"
+url = "https://github.com/arnau"
+
+[[accounts]]
+id = "mastodon"
+service_name = "Mastodon"
+name = "@arnau"
+url = "https://mastodon.xyz/@arnau"
