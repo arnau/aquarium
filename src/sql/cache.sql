@@ -66,10 +66,9 @@ CREATE TABLE IF NOT EXISTS note (
   summary          text NOT NULL,
   publication_date date NOT NULL,
   author_id        text NOT NULL,
-  body             text NOT NULL
-  section_id       text NOT NULL,
+  body             text NOT NULL,
 
-  FOREIGN KEY (author_id) REFERENCES author (id)
+  FOREIGN KEY (author_id) REFERENCES person (id)
 );
 
 CREATE TABLE IF NOT EXISTS sketch_tool (
@@ -89,7 +88,6 @@ CREATE TABLE IF NOT EXISTS sketch (
   author_id        text NOT NULL,
   publication_date date NOT NULL,
   summary          text,
-  section_id       text NOT NULL,
 
   FOREIGN KEY (asset_id) REFERENCES asset (id) ON DELETE CASCADE
 );
@@ -99,7 +97,6 @@ CREATE TABLE IF NOT EXISTS bulletin_issue (
   id               text NOT NULL PRIMARY KEY,
   checksum         text NOT NULL,
   summary          text NOT NULL,
-  section_id       text NOT NULL,
   publication_date date NOT NULL
 );
 
@@ -128,7 +125,6 @@ CREATE TABLE IF NOT EXISTS project (
   name       text NOT NULL,
   summary    text NOT NULL,
   body       text NOT NULL,
-  section_id text NOT NULL,
 
   status     text NOT NULL,
   start_date date NOT NULL,
@@ -136,7 +132,6 @@ CREATE TABLE IF NOT EXISTS project (
 
   source_url text
 );
-
 
 CREATE TABLE IF NOT EXISTS section (
   id            text NOT NULL PRIMARY KEY,

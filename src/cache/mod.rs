@@ -1,9 +1,12 @@
 use anyhow::{self, Result};
 use chrono::{DateTime, Utc};
-pub use rusqlite::Transaction;
-use rusqlite::{self, params, Connection};
+use rusqlite::{self, Connection};
+pub use rusqlite::{params, Row, Transaction};
 use std::str::FromStr;
 
+use crate::Resource;
+
+pub mod records;
 mod strategy;
 pub use strategy::Strategy;
 
@@ -22,11 +25,13 @@ impl Cache {
             Strategy::Disk(path) => {
                 let conn = Connection::open(path)?;
                 conn.pragma_update(None, "journal_mode", &"wal")?;
-                conn.pragma_update(None, "foreign_keys", &"on")?;
                 conn
             }
             Strategy::Memory => Connection::open_in_memory()?,
         };
+        // TODO 2021-07: enable to check referential integrity.
+        conn.pragma_update(None, "foreign_keys", &"off")?;
+
         let bootstrap = include_str!("../sql/cache.sql");
 
         conn.execute_batch(&bootstrap)?;
@@ -69,11 +74,24 @@ pub trait ReadCache
 where
     Self: Sized,
 {
-    type Item;
+    type Item: Resource;
 
     /// Reads the cache to find a single item by Id.
-    fn find(tx: &Transaction, id: &str) -> Option<Self::Item>;
+    fn find(tx: &Transaction, id: &str) -> Result<Option<Self::Item>>;
 
     /// Reads the cache to get all items in the set.
-    fn amass(tx: &Transaction) -> Vec<Self>;
+    fn amass(tx: &Transaction) -> Result<Self>;
+}
+
+pub trait WriteCache
+where
+    Self: Sized,
+{
+    type Item: Resource;
+
+    fn add(tx: &Transaction, resource: Self::Item) -> Result<()>;
+
+    fn remove(tx: &Transaction, id: &str) -> Result<()>;
+
+    // fn bulk(&self, tx: &Transaction) -> Result<()>;
 }

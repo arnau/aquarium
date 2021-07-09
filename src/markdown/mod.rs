@@ -85,7 +85,7 @@ fn take_summary(input: &str) -> (Option<String>, String) {
     if let Some((summary, body)) = input.split_once("<!-- body -->") {
         (Some(summary.trim().into()), body.trim().into())
     } else {
-        (None, input.into())
+        (None, input.trim().into())
     }
 }
 

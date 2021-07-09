@@ -12,3 +12,6 @@ pub trait Resource: checksum::Digest {
     /// The unique identifier. Use in combination with the checksum to ensure the resource is exactly the same.
     fn id(&self) -> &Self::Id;
 }
+
+/// A resource set for any stage.
+pub trait ResourceSet: IntoIterator {}
