@@ -2,8 +2,11 @@ pub mod cache;
 pub mod checksum;
 pub mod cli;
 pub mod markdown;
+pub mod resource_type;
 pub mod source;
 pub mod stamp;
+
+pub use cache::Cache;
 
 /// A resource for any stage.
 pub trait Resource: checksum::Digest {

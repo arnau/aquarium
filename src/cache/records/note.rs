@@ -125,7 +125,7 @@ impl RecordSet for NoteRecordSet {
         let mut rows = stmt.query(params![])?;
 
         while let Some(row) = rows.next()? {
-            let record = NoteRecord::try_from(row)?;
+            let record = Self::Item::try_from(row)?;
             inner.push(record);
         }
 

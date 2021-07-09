@@ -133,7 +133,7 @@ impl TryFrom<NoteRecord> for Note {
 }
 
 #[derive(Clone, Debug)]
-struct NoteSet {
+pub struct NoteSet {
     inner: Vec<Note>,
 }
 

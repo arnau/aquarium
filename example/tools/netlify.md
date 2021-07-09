@@ -1,4 +1,5 @@
 ---
+type: tool
 id: netlify
 name: Netlify
 url: https://www.netlify.com/

@@ -1,4 +1,5 @@
 ---
+type: tool
 id: gatsby
 name: Gatsby
 url: https://www.gatsbyjs.org/
