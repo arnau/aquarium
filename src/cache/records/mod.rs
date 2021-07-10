@@ -11,6 +11,7 @@ mod section;
 mod service_account;
 mod settings;
 mod sketch;
+mod sketch_tool;
 mod tool;
 
 pub use asset::*;
@@ -24,6 +25,7 @@ pub use section::*;
 pub use service_account::*;
 pub use settings::*;
 pub use sketch::*;
+pub use sketch_tool::*;
 
 use super::Transaction;
 
@@ -57,9 +59,14 @@ pub trait RecordSet: Sized {
     fn delete(tx: &Transaction) -> Result<()>;
 }
 
+/// An auxiliary record able to operate on a SQLite storage.
+pub trait AuxRecord: Sized {
+    fn insert(&self, tx: &Transaction) -> Result<()>;
+}
+
 /// A record set for auxiliary data able to operate on a SQLite storage.
 pub trait AuxRecordSet: Sized {
-    type Item: Record;
+    type Item: AuxRecord;
 
     fn len(&self) -> usize;
 

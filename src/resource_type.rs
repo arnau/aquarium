@@ -49,11 +49,11 @@ impl ResourceType {
 
         // TOML based.
 
-        if text.starts_with("---\ntype = \"person\"\n") {
+        if text.trim().starts_with("type = \"person\"\n") {
             return ResourceType::Person;
         }
 
-        if text.starts_with("---\ntype = \"settings\"\n") {
+        if text.trim().starts_with("type = \"settings\"\n") {
             return ResourceType::Settings;
         }
 

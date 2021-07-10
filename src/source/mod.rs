@@ -12,8 +12,10 @@ use std::str::FromStr;
 use walkdir::{DirEntry, WalkDir};
 
 pub mod note;
+pub mod person;
 
 pub use note::{Note, NoteSet};
+pub use person::{Person, PersonSet};
 
 use crate::cache::{Transaction, WriteCache};
 use crate::resource_type::ResourceType;
@@ -52,7 +54,11 @@ fn process_source(entry: &Path, tx: &Transaction) -> Result<()> {
             NoteSet::add(&tx, resource)?;
             info!("note: {}", &path);
         }
-        // ResourceType::Person => {}
+        ResourceType::Person => {
+            let resource = Person::from_str(&contents)?;
+            PersonSet::add(&tx, resource)?;
+            info!("person: {}", &path);
+        }
         // ResourceType::Project => {}
         // ResourceType::Section => {}
         // ResourceType::Settings => {}

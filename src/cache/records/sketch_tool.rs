@@ -1,4 +1,4 @@
-//! This module defines the bulletin mention and bulletin mention set for the SQLite storage.
+//! This module defines the sketch tool for the SQLite storage.
 
 use anyhow::Result;
 use std::convert::TryFrom;
@@ -7,18 +7,18 @@ use super::{AuxRecord, AuxRecordSet};
 use crate::cache::{params, Row, Transaction};
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct BulletinMentionRecord {
-    pub(crate) mention_url: String,
-    pub(crate) entry_url: String,
+pub struct SketchToolRecord {
+    pub(crate) sketch_id: String,
+    pub(crate) tool_id: String,
 }
 
-impl AuxRecord for BulletinMentionRecord {
+impl AuxRecord for SketchToolRecord {
     fn insert(&self, tx: &Transaction) -> Result<()> {
-        let values = params![&self.mention_url, &self.entry_url,];
+        let values = params![&self.sketch_id, &self.tool_id];
         let mut stmt = tx.prepare(
             r#"
             INSERT OR REPLACE INTO
-                bulletin_mention
+                sketch_tool
             VALUES
                 (?, ?);
             "#,
@@ -30,13 +30,13 @@ impl AuxRecord for BulletinMentionRecord {
     }
 }
 
-impl TryFrom<&Row<'_>> for BulletinMentionRecord {
+impl TryFrom<&Row<'_>> for SketchToolRecord {
     type Error = anyhow::Error;
 
     fn try_from(row: &Row) -> Result<Self> {
         let record = Self {
-            mention_url: row.get(0)?,
-            entry_url: row.get(1)?,
+            sketch_id: row.get(0)?,
+            tool_id: row.get(1)?,
         };
 
         Ok(record)
@@ -44,12 +44,12 @@ impl TryFrom<&Row<'_>> for BulletinMentionRecord {
 }
 
 #[derive(Clone, Debug)]
-pub struct BulletinMentionRecordSet {
-    inner: Vec<BulletinMentionRecord>,
+pub struct SketchToolRecordSet {
+    inner: Vec<SketchToolRecord>,
 }
 
-impl IntoIterator for BulletinMentionRecordSet {
-    type Item = BulletinMentionRecord;
+impl IntoIterator for SketchToolRecordSet {
+    type Item = SketchToolRecord;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -57,8 +57,8 @@ impl IntoIterator for BulletinMentionRecordSet {
     }
 }
 
-impl AuxRecordSet for BulletinMentionRecordSet {
-    type Item = BulletinMentionRecord;
+impl AuxRecordSet for SketchToolRecordSet {
+    type Item = SketchToolRecord;
 
     fn len(&self) -> usize {
         self.inner.len()
@@ -71,9 +71,9 @@ impl AuxRecordSet for BulletinMentionRecordSet {
             SELECT
                 *
             FROM
-                bulletin_mention
+                sketch_tool
             WHERE
-                entry_url = ?;
+                sketch_id = ?;
             "#,
         )?;
         let mut rows = stmt.query(params![id])?;
@@ -94,13 +94,13 @@ mod tests {
 
     #[test]
     fn set_full_cycle() -> Result<()> {
-        let record1 = BulletinMentionRecord {
-            mention_url: "mention1".into(),
-            entry_url: "entry1".into(),
+        let record1 = SketchToolRecord {
+            sketch_id: "sketch1".into(),
+            tool_id: "tool1".into(),
         };
-        let record2 = BulletinMentionRecord {
-            mention_url: "mention2".into(),
-            entry_url: "entry1".into(),
+        let record2 = SketchToolRecord {
+            sketch_id: "sketch1".into(),
+            tool_id: "tool2".into(),
         };
         let mut cache = Cache::connect(":memory:")?;
         let tx = cache.transaction()?;
@@ -108,7 +108,7 @@ mod tests {
         record1.insert(&tx)?;
         record2.insert(&tx)?;
 
-        let cached = BulletinMentionRecordSet::select(&tx, "entry1")?;
+        let cached = SketchToolRecordSet::select(&tx, "sketch1")?;
 
         assert_eq!(cached.len(), 2);
 
