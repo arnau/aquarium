@@ -13,9 +13,13 @@ use walkdir::{DirEntry, WalkDir};
 
 pub mod note;
 pub mod person;
+pub mod project;
+pub mod section;
 
 pub use note::{Note, NoteSet};
 pub use person::{Person, PersonSet};
+pub use project::{Project, ProjectSet};
+pub use section::{Section, SectionSet};
 
 use crate::cache::{Transaction, WriteCache};
 use crate::resource_type::ResourceType;
@@ -59,8 +63,16 @@ fn process_source(entry: &Path, tx: &Transaction) -> Result<()> {
             PersonSet::add(&tx, resource)?;
             info!("person: {}", &path);
         }
-        // ResourceType::Project => {}
-        // ResourceType::Section => {}
+        ResourceType::Project => {
+            let resource = Project::from_str(&contents)?;
+            ProjectSet::add(&tx, resource)?;
+            info!("project: {}", &path);
+        }
+        ResourceType::Section => {
+            let resource = Section::from_str(&contents)?;
+            SectionSet::add(&tx, resource)?;
+            info!("section: {}", &path);
+        }
         // ResourceType::Settings => {}
         // ResourceType::Sketch => {}
         // ResourceType::Tool => {}

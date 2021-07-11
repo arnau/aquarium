@@ -61,7 +61,7 @@ impl Markdown {
     }
 }
 
-fn take_frontmatter(blob: &str) -> Result<(&str, &str)> {
+pub fn take_frontmatter(blob: &str) -> Result<(&str, &str)> {
     let groups = FRONTMATTER_RE
         .captures(blob)
         .expect("frontmatter split failure");
