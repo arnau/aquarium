@@ -1,11 +1,12 @@
 ---
 type: project
 id: some-thing
-name: Some Thing
 status: ongoing
 start_date: 2021-07-06
 source_url: https://github.com/arnau/some-thing/
 ---
+# Some Thing
+
 Something to manage “some“ collections.
 
 <!-- body -->
