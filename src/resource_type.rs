@@ -1,13 +1,29 @@
 use anyhow::{bail, Result};
+use lazy_static::lazy_static;
+use regex::Regex;
 use std::fmt;
 use std::str::FromStr;
+
+lazy_static! {
+    static ref HINT_RE: Regex = Regex::new(
+        r#"(?x)
+        # YAML frontmatter
+        ^\s*---\s*\n\s*type:\s*(?P<yaml_hint>\S+)\s*\n
+        |
+        # TOML
+        ^\s*type\s*=\s*"(?P<toml_hint>\S+)"\s*\n
+    "#
+    )
+    .unwrap();
+}
 
 /// Main resource types.
 ///
 /// Auxiliary types such as ServiceAccount are not considered here as they are never represented on their own.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ResourceType {
     Bulletin,
+    BulletinStash,
     Note,
     Person,
     Project,
@@ -15,49 +31,37 @@ pub enum ResourceType {
     Settings,
     Sketch,
     Tool,
-    Unknown,
+    Unknown(String),
 }
 
 impl ResourceType {
     /// Peeks the first few characters expecting to find a type declaration.
-    pub fn from_hint(text: &str) -> ResourceType {
-        // Markdown+Yaml based
+    pub fn from_hint(text: &str) -> Result<Self> {
+        if let Some(groups) = HINT_RE.captures(text) {
+            if let Some(s) = groups.name("yaml_hint") {
+                return ResourceType::from_str(s.as_str());
+            }
 
-        if text.starts_with("---\ntype: bulletin\n") {
-            return ResourceType::Bulletin;
+            if let Some(s) = groups.name("toml_hint") {
+                return ResourceType::from_str(s.as_str());
+            }
         }
 
-        if text.starts_with("---\ntype: note\n") {
-            return ResourceType::Note;
+        bail!("hint not found")
+    }
+
+    pub fn to_hint(&self) -> String {
+        use ResourceType::*;
+
+        match self {
+            // TOML
+            typ @ (Bulletin | BulletinStash | Person | Settings | Sketch) => {
+                format!("type = \"{}\"\n", typ)
+            }
+            // Yaml frontmatter
+            typ @ (Note | Project | Section | Tool) => format!("---\ntype: {}\n", typ),
+            _ => panic!("no hint for unknown type"),
         }
-
-        if text.starts_with("---\ntype: project\n") {
-            return ResourceType::Project;
-        }
-
-        if text.starts_with("---\ntype: section\n") {
-            return ResourceType::Section;
-        }
-
-        if text.starts_with("---\ntype: sketch\n") {
-            return ResourceType::Section;
-        }
-
-        if text.starts_with("---\ntype: tool\n") {
-            return ResourceType::Tool;
-        }
-
-        // TOML based.
-
-        if text.trim().starts_with("type = \"person\"\n") {
-            return ResourceType::Person;
-        }
-
-        if text.trim().starts_with("type = \"settings\"\n") {
-            return ResourceType::Settings;
-        }
-
-        ResourceType::Unknown
     }
 }
 
@@ -67,6 +71,7 @@ impl fmt::Display for ResourceType {
 
         let s = match self {
             Bulletin => "bulletin",
+            BulletinStash => "bulletin_stash",
             Note => "note",
             Person => "person",
             Project => "project",
@@ -74,7 +79,7 @@ impl fmt::Display for ResourceType {
             Settings => "settings",
             Sketch => "sketch",
             Tool => "tool",
-            Unknown => "unknown",
+            Unknown(_) => "unknown",
         };
 
         write!(f, "{}", s)
@@ -89,6 +94,7 @@ impl FromStr for ResourceType {
 
         match s {
             "bulletin" => Ok(Bulletin),
+            "bulletin_stash" => Ok(BulletinStash),
             "note" => Ok(Note),
             "person" => Ok(Person),
             "project" => Ok(Project),
@@ -96,7 +102,63 @@ impl FromStr for ResourceType {
             "settings" => Ok(Settings),
             "sketch" => Ok(Sketch),
             "tool" => Ok(Tool),
-            _ => bail!(format!("'{}' is not a known resource type", s)),
+            unknown => Ok(Unknown(unknown.to_string())),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn note_hint() -> Result<()> {
+        let blob = r#"---
+type: note
+id: a-note
+"#;
+        let actual = ResourceType::from_hint(blob)?;
+
+        assert_eq!(actual, ResourceType::Note);
+
+        Ok(())
+    }
+
+    #[test]
+    fn person_hint() -> Result<()> {
+        let blob = r#"
+type = "person"
+id = "xxx"
+"#;
+        let actual = ResourceType::from_hint(blob)?;
+
+        assert_eq!(actual, ResourceType::Person);
+
+        Ok(())
+    }
+
+    #[test]
+    fn unknown_hint() -> Result<()> {
+        let blob = r#"---
+type: fox
+id: xxx
+"#;
+        let actual = ResourceType::from_hint(blob)?;
+
+        assert_eq!(actual, ResourceType::Unknown("fox".to_string()));
+
+        Ok(())
+    }
+
+    #[test]
+    fn hint_not_found() -> Result<()> {
+        let blob = r#"---
+id: xxx
+"#;
+        let actual = ResourceType::from_hint(blob);
+
+        assert!(actual.is_err());
+
+        Ok(())
     }
 }

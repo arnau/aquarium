@@ -49,37 +49,43 @@ fn process_source(entry: &Path, tx: &Transaction) -> Result<()> {
     let mut file = File::open(&entry)?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
-    let resource_type = ResourceType::from_hint(&contents);
 
-    match resource_type {
-        // ResourceType::Bulletin => {}
-        ResourceType::Note => {
-            let resource = Note::from_str(&contents)?;
-            NoteSet::add(&tx, resource)?;
-            info!("note: {}", &path);
-        }
-        ResourceType::Person => {
-            let resource = Person::from_str(&contents)?;
-            PersonSet::add(&tx, resource)?;
-            info!("person: {}", &path);
-        }
-        ResourceType::Project => {
-            let resource = Project::from_str(&contents)?;
-            ProjectSet::add(&tx, resource)?;
-            info!("project: {}", &path);
-        }
-        ResourceType::Section => {
-            let resource = Section::from_str(&contents)?;
-            SectionSet::add(&tx, resource)?;
-            info!("section: {}", &path);
-        }
-        // ResourceType::Settings => {}
-        // ResourceType::Sketch => {}
-        // ResourceType::Tool => {}
-        _ => {
-            warn!("unknown type {}", &path);
+    // Skipping anything without a hint.
+    if let Ok(resource_type) = ResourceType::from_hint(&contents) {
+        match resource_type {
+            // ResourceType::Bulletin => {}
+            ResourceType::Note => {
+                let resource = Note::from_str(&contents)?;
+                NoteSet::add(&tx, resource)?;
+                info!("note: {}", &path);
+            }
+            ResourceType::Person => {
+                let resource = Person::from_str(&contents)?;
+                PersonSet::add(&tx, resource)?;
+                info!("person: {}", &path);
+            }
+            ResourceType::Project => {
+                let resource = Project::from_str(&contents)?;
+                ProjectSet::add(&tx, resource)?;
+                info!("project: {}", &path);
+            }
+            ResourceType::Section => {
+                let resource = Section::from_str(&contents)?;
+                SectionSet::add(&tx, resource)?;
+                info!("section: {}", &path);
+            }
+            // ResourceType::Settings => {}
+            // ResourceType::Sketch => {}
+            // ResourceType::Tool => {}
+            ResourceType::Unknown(s) => {
+                warn!("unknown type '{}' {}", &s, &path);
+            }
+            _ => {
+                warn!("unimplemented {}", &path);
+            }
         }
     }
+
     Ok(())
 }
 
