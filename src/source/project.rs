@@ -204,7 +204,7 @@ impl WriteCache for ProjectSet {
     }
 
     fn remove(tx: &Transaction, id: &str) -> Result<()> {
-        NoteRecord::delete(&tx, id)
+        ProjectRecord::delete(&tx, id)
     }
 }
 

@@ -1,4 +1,5 @@
 type = "settings"
+id = "main"
 title = "Aquarium example"
 description = "An example for Aquarium"
 url = "https://aquarium.netlify.app/"

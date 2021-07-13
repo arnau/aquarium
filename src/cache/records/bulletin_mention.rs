@@ -59,12 +59,13 @@ impl IntoIterator for BulletinMentionRecordSet {
 
 impl AuxRecordSet for BulletinMentionRecordSet {
     type Item = BulletinMentionRecord;
+    type ResourceId = String;
 
     fn len(&self) -> usize {
         self.inner.len()
     }
 
-    fn select(tx: &Transaction, id: &str) -> Result<Self> {
+    fn select(tx: &Transaction, id: Self::ResourceId) -> Result<Self> {
         let mut inner = Vec::new();
         let mut stmt = tx.prepare(
             r#"
@@ -108,7 +109,7 @@ mod tests {
         record1.insert(&tx)?;
         record2.insert(&tx)?;
 
-        let cached = BulletinMentionRecordSet::select(&tx, "entry1")?;
+        let cached = BulletinMentionRecordSet::select(&tx, "entry1".to_string())?;
 
         assert_eq!(cached.len(), 2);
 

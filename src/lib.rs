@@ -18,3 +18,16 @@ pub trait Resource: checksum::Digest {
 
 /// A resource set for any stage.
 pub trait ResourceSet: IntoIterator {}
+
+#[allow(dead_code)]
+pub(crate) fn to_hex(buffer: &[u8]) -> String {
+    let mut s = String::new();
+    let table = b"0123456789abcdef";
+
+    for &b in buffer {
+        s.push(table[(b >> 4) as usize] as char);
+        s.push(table[(b & 0xf) as usize] as char);
+    }
+
+    s
+}

@@ -74,12 +74,13 @@ impl IntoIterator for ServiceAccountRecordSet {
 
 impl AuxRecordSet for ServiceAccountRecordSet {
     type Item = ServiceAccountRecord;
+    type ResourceId = String;
 
     fn len(&self) -> usize {
         self.inner.len()
     }
 
-    fn select(tx: &Transaction, id: &str) -> Result<Self> {
+    fn select(tx: &Transaction, id: Self::ResourceId) -> Result<Self> {
         let mut inner = Vec::new();
         let mut stmt = tx.prepare(
             r#"
@@ -131,7 +132,7 @@ mod tests {
         record1.insert(&tx)?;
         record2.insert(&tx)?;
 
-        let cached = ServiceAccountRecordSet::select(&tx, "person1")?;
+        let cached = ServiceAccountRecordSet::select(&tx, "person1".to_string())?;
 
         assert_eq!(cached.len(), 2);
 

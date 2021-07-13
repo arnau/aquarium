@@ -26,6 +26,7 @@ pub use service_account::*;
 pub use settings::*;
 pub use sketch::*;
 pub use sketch_tool::*;
+pub use tool::*;
 
 use super::Transaction;
 
@@ -67,6 +68,7 @@ pub trait AuxRecord: Sized {
 /// A record set for auxiliary data able to operate on a SQLite storage.
 pub trait AuxRecordSet: Sized {
     type Item: AuxRecord;
+    type ResourceId;
 
     fn len(&self) -> usize;
 
@@ -74,5 +76,5 @@ pub trait AuxRecordSet: Sized {
         self.len() == 0
     }
 
-    fn select(tx: &Transaction, id: &str) -> Result<Self>;
+    fn select(tx: &Transaction, id: Self::ResourceId) -> Result<Self>;
 }

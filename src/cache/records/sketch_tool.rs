@@ -59,12 +59,13 @@ impl IntoIterator for SketchToolRecordSet {
 
 impl AuxRecordSet for SketchToolRecordSet {
     type Item = SketchToolRecord;
+    type ResourceId = String;
 
     fn len(&self) -> usize {
         self.inner.len()
     }
 
-    fn select(tx: &Transaction, id: &str) -> Result<Self> {
+    fn select(tx: &Transaction, id: Self::ResourceId) -> Result<Self> {
         let mut inner = Vec::new();
         let mut stmt = tx.prepare(
             r#"
@@ -108,7 +109,7 @@ mod tests {
         record1.insert(&tx)?;
         record2.insert(&tx)?;
 
-        let cached = SketchToolRecordSet::select(&tx, "sketch1")?;
+        let cached = SketchToolRecordSet::select(&tx, "sketch1".to_string())?;
 
         assert_eq!(cached.len(), 2);
 

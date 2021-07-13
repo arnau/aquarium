@@ -68,7 +68,7 @@ impl From<Person> for PersonRecord {
 }
 
 fn from_record(tx: &Transaction, record: PersonRecord) -> Result<Person> {
-    let accounts: Vec<ServiceAccount> = ServiceAccountRecordSet::select(tx, &record.id)?
+    let accounts: Vec<ServiceAccount> = ServiceAccountRecordSet::select(tx, record.id.clone())?
         .into_iter()
         .map(|account| ServiceAccount::from(account))
         .collect();

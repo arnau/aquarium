@@ -3,7 +3,7 @@
 use anyhow::Result;
 use std::convert::TryFrom;
 
-use super::{Record, RecordSet};
+use super::{AuxRecord, AuxRecordSet};
 use crate::cache::{params, Row, Transaction};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -16,8 +16,8 @@ pub struct BulletinEntryRecord {
     pub(crate) issue_id: Option<String>,
 }
 
-impl Record for BulletinEntryRecord {
-    fn select(tx: &Transaction, id: &str) -> Result<Option<Self>> {
+impl BulletinEntryRecord {
+    pub fn select(tx: &Transaction, id: &str) -> Result<Option<Self>> {
         let mut stmt = tx.prepare(
             r#"
                 SELECT
@@ -38,7 +38,9 @@ impl Record for BulletinEntryRecord {
             Ok(None)
         }
     }
+}
 
+impl AuxRecord for BulletinEntryRecord {
     fn insert(&self, tx: &Transaction) -> Result<()> {
         let values = params![
             &self.url,
@@ -58,21 +60,6 @@ impl Record for BulletinEntryRecord {
         )?;
 
         stmt.execute(values)?;
-
-        Ok(())
-    }
-
-    fn delete(tx: &Transaction, id: &str) -> Result<()> {
-        let mut stmt = tx.prepare(
-            r#"
-            DELETE FROM
-                bulletin_entry
-            WHERE
-                url = ?;
-            "#,
-        )?;
-
-        stmt.execute(params![id])?;
 
         Ok(())
     }
@@ -109,36 +96,34 @@ impl IntoIterator for BulletinEntryRecordSet {
     }
 }
 
-impl RecordSet for BulletinEntryRecordSet {
+impl AuxRecordSet for BulletinEntryRecordSet {
     type Item = BulletinEntryRecord;
+    type ResourceId = Option<String>;
 
     fn len(&self) -> usize {
         self.inner.len()
     }
 
-    fn query(tx: &Transaction, query: &str) -> Result<Self> {
-        let mut inner = Vec::new();
-        let mut stmt = tx.prepare(query)?;
-        let mut rows = stmt.query(params![])?;
-
-        while let Some(row) = rows.next()? {
-            let record = Self::Item::try_from(row)?;
-            inner.push(record);
-        }
-
-        Ok(Self { inner })
-    }
-
-    fn select(tx: &Transaction) -> Result<Self> {
-        let mut inner = Vec::new();
-        let mut stmt = tx.prepare(
+    fn select(tx: &Transaction, id: Self::ResourceId) -> Result<Self> {
+        let clause = if let Some(id) = id {
+            format!("issue_id = '{}'", id)
+        } else {
+            format!("issue_id is NULL")
+        };
+        let query = format!(
             r#"
-              SELECT
-                  *
-              FROM
-                  bulletin_entry;
+            SELECT
+                *
+            FROM
+                bulletin_entry
+            WHERE
+                {};
             "#,
-        )?;
+            clause
+        );
+
+        let mut inner = Vec::new();
+        let mut stmt = tx.prepare(&query)?;
         let mut rows = stmt.query(params![])?;
 
         while let Some(row) = rows.next()? {
@@ -147,21 +132,6 @@ impl RecordSet for BulletinEntryRecordSet {
         }
 
         Ok(Self { inner })
-    }
-
-    fn insert(&self, tx: &Transaction) -> Result<()> {
-        for item in &self.inner {
-            item.insert(tx)?;
-        }
-
-        Ok(())
-    }
-
-    fn delete(tx: &Transaction) -> Result<()> {
-        let mut stmt = tx.prepare(r#"DELETE FROM bulletin_entry;"#)?;
-        stmt.execute(params![])?;
-
-        Ok(())
     }
 }
 
@@ -187,15 +157,9 @@ mod tests {
 
         let cached = BulletinEntryRecord::select(&tx, &record.url)?.expect("record to be cached");
 
-        assert_eq!(record, cached);
-
-        BulletinEntryRecord::delete(&tx, &record.url)?;
-
-        let void = BulletinEntryRecord::select(&tx, &record.url)?;
-
-        assert!(void.is_none());
-
         tx.commit()?;
+
+        assert_eq!(record, cached);
 
         Ok(())
     }
@@ -224,17 +188,11 @@ mod tests {
         record1.insert(&tx)?;
         record2.insert(&tx)?;
 
-        let cached = BulletinEntryRecordSet::select(&tx)?;
-
-        assert_eq!(cached.len(), 2);
-
-        BulletinEntryRecordSet::delete(&tx)?;
-
-        let void = BulletinEntryRecordSet::select(&tx)?;
-
-        assert!(void.is_empty());
+        let cached = BulletinEntryRecordSet::select(&tx, None)?;
 
         tx.commit()?;
+
+        assert_eq!(cached.len(), 1);
 
         Ok(())
     }
