@@ -17,6 +17,7 @@ use crate::{Resource, ResourceSet};
 pub struct Section {
     id: String,
     title: String,
+    resource_type: Option<String>,
     body: Option<String>,
 }
 
@@ -32,6 +33,7 @@ impl Digest for Section {
     fn digest(&self, hasher: &mut Hasher) {
         self.id.digest(hasher);
         self.title.digest(hasher);
+        self.resource_type.digest(hasher);
         self.body.digest(hasher);
     }
 }
@@ -51,6 +53,7 @@ impl FromStr for Section {
         Ok(Self {
             id: metadata.id,
             title: metadata.title,
+            resource_type: metadata.resource_type,
             body,
         })
     }
@@ -77,6 +80,8 @@ struct Metadata {
     _type: String,
     id: String,
     title: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    resource_type: Option<String>,
 }
 
 impl From<&Section> for Metadata {
@@ -85,6 +90,7 @@ impl From<&Section> for Metadata {
             _type: "section".into(),
             id: resource.id.clone(),
             title: resource.title.clone(),
+            resource_type: resource.resource_type.clone(),
         }
     }
 }
@@ -95,6 +101,7 @@ impl From<Section> for SectionRecord {
             checksum: resource.checksum().to_string(),
             id: resource.id,
             title: resource.title,
+            resource_type: resource.resource_type,
             body: resource.body,
         }
     }
@@ -105,6 +112,7 @@ impl From<SectionRecord> for Section {
         Self {
             id: record.id,
             title: record.title,
+            resource_type: record.resource_type,
             body: record.body,
         }
     }
@@ -194,6 +202,7 @@ mod tests {
 type: section
 id: notes
 title: Notes
+resource_type: note
 ---
 Notes, reflections and reviews."#;
         let mut cache = Cache::connect(":memory:")?;

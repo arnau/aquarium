@@ -16,6 +16,7 @@ pub mod asset;
 pub mod bulletin_entry;
 pub mod bulletin_issue;
 pub mod bulletin_stash;
+pub mod entrance;
 pub mod note;
 pub mod person;
 pub mod project;
@@ -28,6 +29,7 @@ pub use asset::{Asset, AssetSet};
 pub use bulletin_entry::BulletinEntry;
 pub use bulletin_issue::{Bulletin, BulletinSet};
 pub use bulletin_stash::BulletinStash;
+pub use entrance::Entrance;
 pub use note::{Note, NoteSet};
 pub use person::{Person, PersonSet};
 pub use project::{Project, ProjectSet};
@@ -78,7 +80,7 @@ fn process_source(entry: &Path, tx: &Transaction) -> Result<()> {
 
             let resource = Asset::new(id.to_string(), extension.to_string(), buffer);
             AssetSet::add(&tx, resource)?;
-            info!("asset: {}", &path);
+            info!("source(asset): {}", &path);
 
             return Ok(());
         }
@@ -94,47 +96,52 @@ fn process_source(entry: &Path, tx: &Transaction) -> Result<()> {
             ResourceType::BulletinStash => {
                 let resource = BulletinStash::from_str(&contents)?;
                 BulletinStash::add(&tx, resource)?;
-                info!("bulletin stash: {}", &path);
+                info!("source(bulletin_stash): {}", &path);
             }
             ResourceType::Bulletin => {
                 let resource = Bulletin::from_str(&contents)?;
                 BulletinSet::add(&tx, resource)?;
-                info!("bulletin: {}", &path);
+                info!("source(bulletin): {}", &path);
+            }
+            ResourceType::Entrance => {
+                let resource = Entrance::from_str(&contents)?;
+                Entrance::add(&tx, resource)?;
+                info!("source(entrance): {}", &path);
             }
             ResourceType::Note => {
                 let resource = Note::from_str(&contents)?;
                 NoteSet::add(&tx, resource)?;
-                info!("note: {}", &path);
+                info!("source(note): {}", &path);
             }
             ResourceType::Person => {
                 let resource = Person::from_str(&contents)?;
                 PersonSet::add(&tx, resource)?;
-                info!("person: {}", &path);
+                info!("source(person): {}", &path);
             }
             ResourceType::Project => {
                 let resource = Project::from_str(&contents)?;
                 ProjectSet::add(&tx, resource)?;
-                info!("project: {}", &path);
+                info!("source(project): {}", &path);
             }
             ResourceType::Section => {
                 let resource = Section::from_str(&contents)?;
                 SectionSet::add(&tx, resource)?;
-                info!("section: {}", &path);
+                info!("source(section): {}", &path);
             }
             ResourceType::Settings => {
                 let resource = Settings::from_str(&contents)?;
                 SettingsSet::add(&tx, resource)?;
-                info!("settings: {}", &path);
+                info!("source(settings): {}", &path);
             }
             ResourceType::Sketch => {
                 let resource = Sketch::from_str(&contents)?;
                 SketchSet::add(&tx, resource)?;
-                info!("sketch: {}", &path);
+                info!("source(sketch): {}", &path);
             }
             ResourceType::Tool => {
                 let resource = Tool::from_str(&contents)?;
                 ToolSet::add(&tx, resource)?;
-                info!("tool: {}", &path);
+                info!("source(tool): {}", &path);
             }
             ResourceType::Unknown(s) => {
                 warn!("unknown type '{}' {}", &s, &path);

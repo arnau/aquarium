@@ -4,9 +4,9 @@ id: another-note
 publication_date: 2021-07-07
 author: arnau
 ---
-# A note with a twist
+# A note with a _twist_
 
-This note is showing some more stuff. For the basics go to [note:a-note].
+This note is showing some more stuff. For the basics go to [A note](/notes/a-note).
 
 <!-- body -->
 

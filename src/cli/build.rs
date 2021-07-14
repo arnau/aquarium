@@ -4,6 +4,7 @@ use std::path::PathBuf;
 
 use crate::cache::{Cache, Strategy};
 use crate::source;
+use crate::zola;
 
 /// Manages bulletins
 #[derive(Debug, Clap)]
@@ -24,6 +25,7 @@ impl Cmd {
         let mut cache = Cache::connect_with_strategy(self.cache_path.clone())?;
 
         source::read(&self.input_path, &mut cache)?;
+        zola::write(&self.output_path, &mut cache)?;
 
         Ok(())
     }

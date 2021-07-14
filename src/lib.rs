@@ -5,6 +5,7 @@ pub mod markdown;
 pub mod resource_type;
 pub mod source;
 pub mod stamp;
+pub mod zola;
 
 pub use cache::Cache;
 

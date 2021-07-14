@@ -11,6 +11,12 @@ pub type DateTime = chrono::DateTime<chrono::Utc>;
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub struct Date(chrono::NaiveDate);
 
+impl Date {
+    pub fn year(&self) -> String {
+        self.0.format("%Y").to_string()
+    }
+}
+
 impl fmt::Display for Date {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0.format("%Y-%m-%d").to_string())
@@ -88,8 +94,6 @@ impl Serialize for Date {
         S: serde::Serializer,
     {
         use serde::ser::Error;
-
-        dbg!(serializer.is_human_readable());
 
         let s = self.to_string();
         let value = toml::value::Datetime::from_str(&s).map_err(Error::custom)?;

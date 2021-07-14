@@ -11,6 +11,7 @@ pub struct SectionRecord {
     pub(crate) id: String,
     pub(crate) checksum: String,
     pub(crate) title: String,
+    pub(crate) resource_type: Option<String>,
     pub(crate) body: Option<String>,
 }
 
@@ -38,13 +39,19 @@ impl Record for SectionRecord {
     }
 
     fn insert(&self, tx: &Transaction) -> Result<()> {
-        let values = params![&self.id, &self.checksum, &self.title, &self.body,];
+        let values = params![
+            &self.id,
+            &self.checksum,
+            &self.title,
+            &self.resource_type,
+            &self.body,
+        ];
         let mut stmt = tx.prepare(
             r#"
               INSERT OR REPLACE INTO
                 section
               VALUES
-                (?, ?, ?, ?);
+                (?, ?, ?, ?, ?);
             "#,
         )?;
 
@@ -77,7 +84,8 @@ impl TryFrom<&Row<'_>> for SectionRecord {
             id: row.get(0)?,
             checksum: row.get(1)?,
             title: row.get(2)?,
-            body: row.get(3)?,
+            resource_type: row.get(3)?,
+            body: row.get(4)?,
         };
 
         Ok(record)
@@ -165,6 +173,7 @@ mod tests {
             id: "section1".into(),
             checksum: "section1".into(),
             title: "".into(),
+            resource_type: None,
             body: None,
         };
         let mut cache = Cache::connect(":memory:")?;
@@ -193,12 +202,14 @@ mod tests {
             id: "section1".into(),
             checksum: "section1".into(),
             title: "".into(),
+            resource_type: None,
             body: Some("".into()),
         };
         let record2 = SectionRecord {
             id: "section2".into(),
             checksum: "section2".into(),
             title: "".into(),
+            resource_type: Some("note".into()),
             body: None,
         };
 

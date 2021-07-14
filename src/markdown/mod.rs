@@ -4,6 +4,9 @@ use regex::Regex;
 use std::str::FromStr;
 
 mod extract;
+mod strip;
+
+pub use strip::strip;
 
 lazy_static! {
     static ref FRONTMATTER_RE: Regex =

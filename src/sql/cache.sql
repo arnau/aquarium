@@ -137,5 +137,77 @@ CREATE TABLE IF NOT EXISTS section (
   id            text NOT NULL PRIMARY KEY,
   checksum      text NOT NULL,
   title         text NOT NULL,
+  resource_type text,
   body          text
 );
+
+CREATE TABLE IF NOT EXISTS entrance (
+  id       text NOT NULL PRIMARY KEY,
+  checksum text NOT NULL,
+  body     text
+);
+
+-- The set of recent news across all relevant resources.
+CREATE VIEW IF NOT EXISTS news AS
+  SELECT * FROM (
+    SELECT
+      id,
+      title,
+      summary,
+      'notes' AS section,
+      publication_date AS date
+    FROM
+      note
+    ORDER BY
+      publication_date DESC
+    LIMIT 3
+  )
+
+  UNION ALL
+
+  SELECT * FROM (
+    SELECT
+      id,
+      title,
+      summary,
+      'sketches' AS section,
+      publication_date AS date
+    FROM
+      sketch
+    ORDER BY
+      publication_date DESC
+    LIMIT 1
+  )
+
+  UNION ALL
+
+  SELECT * FROM (
+    SELECT
+      id,
+      id AS title,
+      summary,
+      'bulletins' AS section,
+      publication_date AS date
+    FROM
+      bulletin_issue
+    ORDER BY
+      publication_date DESC
+    LIMIT 1
+  )
+
+  UNION ALL
+
+  SELECT * FROM (
+    SELECT
+      id,
+      name AS title,
+      summary,
+      'projects' AS section,
+      start_date AS date
+    FROM
+      project
+    ORDER BY
+      start_date DESC
+    LIMIT 1
+  )
+ORDER BY date DESC;

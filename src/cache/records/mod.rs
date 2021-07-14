@@ -4,6 +4,7 @@ mod asset;
 mod bulletin_entry;
 mod bulletin_issue;
 mod bulletin_mention;
+mod entrance;
 mod note;
 mod person;
 mod project;
@@ -13,11 +14,13 @@ mod settings;
 mod sketch;
 mod sketch_tool;
 mod tool;
+mod update;
 
 pub use asset::*;
 pub use bulletin_entry::*;
 pub use bulletin_issue::*;
 pub use bulletin_mention::*;
+pub use entrance::*;
 pub use note::*;
 pub use person::*;
 pub use project::*;
@@ -27,6 +30,7 @@ pub use settings::*;
 pub use sketch::*;
 pub use sketch_tool::*;
 pub use tool::*;
+pub use update::*;
 
 use super::Transaction;
 

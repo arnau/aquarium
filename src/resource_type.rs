@@ -1,6 +1,7 @@
 use anyhow::{bail, Result};
 use lazy_static::lazy_static;
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
 
@@ -20,10 +21,12 @@ lazy_static! {
 /// Main resource types.
 ///
 /// Auxiliary types such as ServiceAccount are not considered here as they are never represented on their own.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ResourceType {
     Bulletin,
     BulletinStash,
+    Entrance,
     Note,
     Person,
     Project,
@@ -59,7 +62,7 @@ impl ResourceType {
                 format!("type = \"{}\"\n", typ)
             }
             // Yaml frontmatter
-            typ @ (Note | Project | Section | Tool) => format!("---\ntype: {}\n", typ),
+            typ @ (Entrance | Note | Project | Section | Tool) => format!("---\ntype: {}\n", typ),
             _ => panic!("no hint for unknown type"),
         }
     }
@@ -72,6 +75,7 @@ impl fmt::Display for ResourceType {
         let s = match self {
             Bulletin => "bulletin",
             BulletinStash => "bulletin_stash",
+            Entrance => "entrance",
             Note => "note",
             Person => "person",
             Project => "project",
@@ -95,6 +99,7 @@ impl FromStr for ResourceType {
         match s {
             "bulletin" => Ok(Bulletin),
             "bulletin_stash" => Ok(BulletinStash),
+            "entrance" => Ok(Entrance),
             "note" => Ok(Note),
             "person" => Ok(Person),
             "project" => Ok(Project),
