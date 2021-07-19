@@ -14,6 +14,7 @@
 
 {% block content %}
 
+<article class="note">
 <h1>
   {{ page.extra.title | markdown(inline=true) | safe }}
 </h1>
@@ -28,5 +29,6 @@
 {{ page.extra.summary | markdown() | safe }}
 
 {{ page.content | safe }}
+</article>
 
 {% endblock content %}

@@ -6,7 +6,7 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 1.4;
   background-color: whitesmoke;
 
@@ -25,9 +25,7 @@ html, body {
 
 .skip-link:link,
 .skip-link:visited,
-.skip-link:hover,
-.govuk-skip-link:active,
-.govuk-skip-link:focus {
+.skip-link:hover {
   color: black;
 }
 
@@ -41,7 +39,6 @@ html, body {
 .skip-link:focus {
   outline: none;
   background-color: #fd0;
-  // position: static;
   top: 1rem;
   left: 1rem;
 }
@@ -195,20 +192,6 @@ main {
   padding: 0.6rem;
 }
 
-.status-endorsed {
-  background-color: #8D5;
-  color: black;
-  display: inline-block;
-  padding: 0.2rem;
-}
-
-.status-published {
-  background-color: #8D5;
-  color: black;
-  display: inline-block;
-  padding: 0.2rem;
-}
-
 .table-list {
   border-collapse: collapse;
   width: 100%;
@@ -228,21 +211,43 @@ main {
   padding: 0.6rem;
 }
 
-.official-publication a {
-  color: black;
-  background-color: var(--highlight-color);
-  border: 2px solid goldenrod;
-  display: inline-block;
+article.note table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 2.4rem 0;
+}
+
+article.note table th {
+  text-align: left;
+  border-bottom: 1px solid lightgrey;
+  padding: 0.6rem;
+  font-weight: 700;
+}
+
+article.note td {
+  text-align: left;
+  border-bottom: 1px solid lightgrey;
   padding: 0.6rem;
 }
 
-.note {
-  border-left: 8px solid skyblue;
-  border-right: 8px solid skyblue;
-  padding: 0 0.8rem;
-  margin: 3rem 0;
-  font-size: 1.1rem;
-  line-height: 1.2;
+article.note ul {
+  display: grid;
+  grid-gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  margin-left: 0.8rem;
+}
+
+article.note p + ul {
+  margin-left: 1.8rem;
+}
+
+article.note li {
+  display: list-item;
+  margin-bottom: 0.4rem;
+}
+article.note li::marker {
+  content: "- ";
 }
 
 a.action {
@@ -395,4 +400,14 @@ main {
   margin: 0;
   padding: 0;
   display: block;
+}
+
+pre {
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+pre > code {
+  display: block;
+  padding: 1rem;
 }

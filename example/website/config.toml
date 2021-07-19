@@ -8,6 +8,7 @@ feed_limit = 10
 
 [markdown]
 highlight_code = true
+highlight_theme = "zenburn"
 external_links_no_follow = true
 external_links_no_referrer = true
 
