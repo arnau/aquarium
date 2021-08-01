@@ -4,8 +4,10 @@ use regex::Regex;
 use std::str::FromStr;
 
 mod extract;
+mod processor;
 mod strip;
 
+pub use processor::enrich;
 pub use strip::strip;
 
 lazy_static! {

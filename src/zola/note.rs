@@ -10,7 +10,7 @@ use std::str::FromStr;
 use super::author::Author;
 use super::ZolaResource;
 use crate::cache::{Row, Transaction};
-use crate::markdown::strip;
+use crate::markdown;
 use crate::resource_type::ResourceType;
 use crate::stamp::Date;
 
@@ -85,14 +85,17 @@ impl TryFrom<&Row<'_>> for Note {
             author,
         };
         let metadata = Metadata {
-            title: strip(&title),
-            description: strip(&summary),
+            title: markdown::strip(&title),
+            description: markdown::strip(&summary),
             date: Date::from_str(&date)?,
             template: "note.html".to_owned(),
             in_search_index: true,
             extra,
         };
-        let resource = Self { metadata, body };
+        let resource = Self {
+            metadata,
+            body: markdown::enrich(&body)?,
+        };
 
         Ok(resource)
     }

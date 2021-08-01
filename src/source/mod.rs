@@ -94,54 +94,54 @@ fn process_source(entry: &Path, tx: &Transaction) -> Result<()> {
     if let Ok(resource_type) = ResourceType::from_hint(&contents) {
         match resource_type {
             ResourceType::BulletinStash => {
+                info!("source(bulletin_stash): {}", &path);
                 let resource = BulletinStash::from_str(&contents)?;
                 BulletinStash::add(&tx, resource)?;
-                info!("source(bulletin_stash): {}", &path);
             }
             ResourceType::Bulletin => {
+                info!("source(bulletin): {}", &path);
                 let resource = Bulletin::from_str(&contents)?;
                 BulletinSet::add(&tx, resource)?;
-                info!("source(bulletin): {}", &path);
             }
             ResourceType::Entrance => {
+                info!("source(entrance): {}", &path);
                 let resource = Entrance::from_str(&contents)?;
                 Entrance::add(&tx, resource)?;
-                info!("source(entrance): {}", &path);
             }
             ResourceType::Note => {
+                info!("source(note): {}", &path);
                 let resource = Note::from_str(&contents)?;
                 NoteSet::add(&tx, resource)?;
-                info!("source(note): {}", &path);
             }
             ResourceType::Person => {
+                info!("source(person): {}", &path);
                 let resource = Person::from_str(&contents)?;
                 PersonSet::add(&tx, resource)?;
-                info!("source(person): {}", &path);
             }
             ResourceType::Project => {
+                info!("source(project): {}", &path);
                 let resource = Project::from_str(&contents)?;
                 ProjectSet::add(&tx, resource)?;
-                info!("source(project): {}", &path);
             }
             ResourceType::Section => {
+                info!("source(section): {}", &path);
                 let resource = Section::from_str(&contents)?;
                 SectionSet::add(&tx, resource)?;
-                info!("source(section): {}", &path);
             }
             ResourceType::Settings => {
+                info!("source(settings): {}", &path);
                 let resource = Settings::from_str(&contents)?;
                 SettingsSet::add(&tx, resource)?;
-                info!("source(settings): {}", &path);
             }
             ResourceType::Sketch => {
+                info!("source(sketch): {}", &path);
                 let resource = Sketch::from_str(&contents)?;
                 SketchSet::add(&tx, resource)?;
-                info!("source(sketch): {}", &path);
             }
             ResourceType::Tool => {
+                info!("source(tool): {}", &path);
                 let resource = Tool::from_str(&contents)?;
                 ToolSet::add(&tx, resource)?;
-                info!("source(tool): {}", &path);
             }
             ResourceType::Unknown(s) => {
                 warn!("unknown type '{}' {}", &s, &path);
