@@ -1,5 +1,6 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
+use pulldown_cmark::{html, Options, Parser};
 use regex::Regex;
 use std::str::FromStr;
 
@@ -64,6 +65,17 @@ impl Markdown {
     pub fn to_tuple(self) -> (String, String, Option<String>, String) {
         (self.frontmatter, self.title, self.summary, self.body)
     }
+}
+
+pub fn to_html(blob: &str) -> String {
+    let mut options = Options::empty();
+    options.insert(Options::ENABLE_STRIKETHROUGH);
+    let parser = Parser::new_ext(blob, options);
+
+    let mut html_output = String::new();
+    html::push_html(&mut html_output, parser);
+
+    html_output
 }
 
 pub fn take_frontmatter(blob: &str) -> Result<(&str, &str)> {

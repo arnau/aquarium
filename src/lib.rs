@@ -1,6 +1,7 @@
 pub mod cache;
 pub mod checksum;
 pub mod cli;
+pub mod feed;
 pub mod markdown;
 pub mod resource_type;
 pub mod source;

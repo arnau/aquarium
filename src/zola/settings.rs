@@ -16,12 +16,12 @@ use crate::resource_type::ResourceType;
 pub struct Settings {
     #[serde(rename = "type")]
     _type: String,
-    id: String,
-    title: String,
-    description: String,
-    url: String,
-    copyright: String,
-    navigation: Vec<String>,
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub url: String,
+    pub copyright: String,
+    pub navigation: Vec<String>,
     licence: Licence,
 }
 

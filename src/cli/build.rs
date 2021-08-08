@@ -3,6 +3,7 @@ use clap::Clap;
 use std::path::PathBuf;
 
 use crate::cache::{Cache, Strategy};
+use crate::feed;
 use crate::source;
 use crate::zola;
 
@@ -25,7 +26,8 @@ impl Cmd {
         let mut cache = Cache::connect_with_strategy(self.cache_path.clone())?;
 
         source::read(&self.input_path, &mut cache)?;
-        zola::write(&self.output_path, &mut cache)?;
+        zola::write(&self.output_path.join("content"), &mut cache)?;
+        feed::write(&self.output_path.join("static"), &mut cache)?;
 
         Ok(())
     }

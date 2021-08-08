@@ -15,5 +15,5 @@ id = "arnau"
 name = "Arnau Siches"
 guest = false
 +++
-From here onwards it's the body of the note so the first H1 will become the _title_ and any content before the `<!-- body
--->` mark will become the _summary_.
+
+From here onwards it's the body of the note so the first H1 will become the _title_ and any content before the `<!-- body -->` mark will become the _summary_.

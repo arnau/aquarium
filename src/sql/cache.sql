@@ -211,3 +211,50 @@ CREATE VIEW IF NOT EXISTS news AS
     LIMIT 1
   )
 ORDER BY date DESC;
+
+
+-- Like news but with equal weigth for all sources.
+CREATE VIEW IF NOT EXISTS feed AS
+  SELECT
+    id,
+    title,
+    summary,
+    'notes' AS section,
+    publication_date AS date
+  FROM
+    note
+
+  UNION
+
+  SELECT
+    id,
+    title,
+    summary,
+    'sketches' AS section,
+    publication_date AS date
+  FROM
+    sketch
+
+  UNION
+
+  SELECT
+    id,
+    id AS title,
+    summary,
+    'bulletins/' || strftime('%Y', publication_date) AS section, -- TODO: Compose year.
+    publication_date AS date
+  FROM
+    bulletin_issue
+
+  UNION
+
+  SELECT
+    id,
+    name AS title,
+    summary,
+    'projects' AS section,
+    start_date AS date
+  FROM
+    project
+
+ORDER BY date DESC;
