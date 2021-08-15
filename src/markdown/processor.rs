@@ -278,10 +278,6 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                         stack.pop();
                     }
                     Tag::List(_) => {
-                        if list_depth.is_none() {
-                            recipient.push_str("\n");
-                        }
-
                         stack.pop();
                         list_depth = if let Some(x) = list_depth {
                             if x == 0 {
@@ -292,6 +288,12 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                         } else {
                             None
                         };
+
+                        if list_depth.is_none() {
+                            // Trims hanging space.
+                            recipient.pop();
+                            recipient.push_str("\n");
+                        }
                     }
                     Tag::Item => {}
                     Tag::Emphasis => {
@@ -643,6 +645,20 @@ and yet another line"#;
    - item21 _with_ some **rich** content.
    - item22
 3. item3"#;
+        let actual = enrich(text)?;
+
+        assert_eq!((&actual).trim(), text);
+
+        Ok(())
+    }
+
+    #[test]
+    fn preserve_list_with_paragraph() -> Result<()> {
+        let text = r#"- item1
+- item2
+- item3
+
+A paragraph."#;
         let actual = enrich(text)?;
 
         assert_eq!((&actual).trim(), text);
