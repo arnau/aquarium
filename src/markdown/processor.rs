@@ -371,13 +371,24 @@ fn recompose_sentence(chunk: &str, recipient: &mut String) {
         || text.starts_with("]")
         || text.starts_with(")")
         || text.starts_with("}")
+        || text.starts_with("“")
+        || text.starts_with("”")
+        || text.starts_with("‘")
+        || text.starts_with("”")
     {
-        recipient.pop();
+        if recipient.ends_with(" ") {
+            recipient.pop();
+        }
     }
 
     recipient.push_str(text);
 
-    if !(text.ends_with("[") || text.ends_with("(") || text.ends_with("{")) {
+    if !(text.ends_with("[")
+        || text.ends_with("(")
+        || text.ends_with("{")
+        || text.ends_with("“")
+        || text.ends_with("‘"))
+    {
         recipient.push_str(" ");
     }
     // dbg!(&recipient);
@@ -593,6 +604,16 @@ and yet another line"#;
     #[test]
     fn preserve_rich_paragraphs() -> Result<()> {
         let text = r#"A paragraph with ~~strikethrough~~, _emphasis_ and **strong**. As well as `code` and a [link](https://foo)."#;
+        let actual = enrich(text)?;
+
+        assert_eq!((&actual).trim(), text);
+
+        Ok(())
+    }
+
+    #[test]
+    fn preserve_paragraph_with_marks() -> Result<()> {
+        let text = r#"In words of the RFC8288, “[...] a link is a typed connection between two resources [...]”."#;
         let actual = enrich(text)?;
 
         assert_eq!((&actual).trim(), text);
