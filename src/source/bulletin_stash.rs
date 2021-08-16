@@ -38,7 +38,7 @@ impl FromStr for BulletinStash {
     type Err = anyhow::Error;
 
     fn from_str(blob: &str) -> Result<Self, Self::Err> {
-        let resource: BulletinStash = toml::from_str(&blob)?;
+        let resource: BulletinStash = toml::from_str(blob)?;
 
         Ok(resource)
     }
@@ -62,7 +62,7 @@ impl ReadCache for BulletinStash {
     fn amass(tx: &Transaction) -> Result<Self> {
         let entries: Vec<BulletinEntry> = BulletinEntryRecordSet::select(tx, None)?
             .into_iter()
-            .map(|account| BulletinEntry::from(account))
+            .map(BulletinEntry::from)
             .collect();
         let resource = Self {
             _type: "bulletin_stash".to_string(),
@@ -79,7 +79,7 @@ impl WriteCache for BulletinStash {
     fn add(tx: &Transaction, resource: Self::Item) -> Result<()> {
         for entry in &resource.entries {
             let record = BulletinEntryRecord::from((None, entry));
-            record.insert(&tx)?;
+            record.insert(tx)?;
         }
 
         Ok(())

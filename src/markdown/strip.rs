@@ -1,16 +1,16 @@
 use pulldown_cmark::{Event, Options, Parser, Tag};
 
 /// Strips all markdown from the given text.
-pub fn strip<'a>(text: &str) -> String {
+pub fn strip(text: &str) -> String {
     let options = Options::all();
 
-    let mut parser = Parser::new_ext(text, options);
+    let parser = Parser::new_ext(text, options);
     let mut recipient = String::new();
 
-    while let Some(event) = parser.next() {
+    for event in parser {
         match event {
             Event::Code(ref text) => {
-                recipient.push_str(" ");
+                recipient.push(' ');
                 recipient.push_str(text);
             }
             Event::Text(ref text) => {
@@ -28,7 +28,7 @@ pub fn strip<'a>(text: &str) -> String {
                 Tag::Emphasis | Tag::Link(..) | Tag::Strikethrough | Tag::Strong | Tag::BlockQuote,
             ) => (),
             _ => {
-                recipient.push_str("\n");
+                recipient.push('\n');
             }
         }
     }

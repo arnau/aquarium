@@ -52,7 +52,7 @@ pub fn read(source_dir: &Path, cache: &mut Cache) -> Result<()> {
         let path = entry.path();
 
         if path.is_file() {
-            process_source(&path, &tx)?;
+            process_source(path, &tx)?;
         }
     }
 
@@ -79,7 +79,7 @@ fn process_source(entry: &Path, tx: &Transaction) -> Result<()> {
             file.read_to_end(&mut buffer)?;
 
             let resource = Asset::new(id.to_string(), extension.to_string(), buffer);
-            AssetSet::add(&tx, resource)?;
+            AssetSet::add(tx, resource)?;
             info!("source(asset): {}", &path);
 
             return Ok(());
@@ -96,52 +96,52 @@ fn process_source(entry: &Path, tx: &Transaction) -> Result<()> {
             ResourceType::BulletinStash => {
                 info!("source(bulletin_stash): {}", &path);
                 let resource = BulletinStash::from_str(&contents)?;
-                BulletinStash::add(&tx, resource)?;
+                BulletinStash::add(tx, resource)?;
             }
             ResourceType::Bulletin => {
                 info!("source(bulletin): {}", &path);
                 let resource = Bulletin::from_str(&contents)?;
-                BulletinSet::add(&tx, resource)?;
+                BulletinSet::add(tx, resource)?;
             }
             ResourceType::Entrance => {
                 info!("source(entrance): {}", &path);
                 let resource = Entrance::from_str(&contents)?;
-                Entrance::add(&tx, resource)?;
+                Entrance::add(tx, resource)?;
             }
             ResourceType::Note => {
                 info!("source(note): {}", &path);
                 let resource = Note::from_str(&contents)?;
-                NoteSet::add(&tx, resource)?;
+                NoteSet::add(tx, resource)?;
             }
             ResourceType::Person => {
                 info!("source(person): {}", &path);
                 let resource = Person::from_str(&contents)?;
-                PersonSet::add(&tx, resource)?;
+                PersonSet::add(tx, resource)?;
             }
             ResourceType::Project => {
                 info!("source(project): {}", &path);
                 let resource = Project::from_str(&contents)?;
-                ProjectSet::add(&tx, resource)?;
+                ProjectSet::add(tx, resource)?;
             }
             ResourceType::Section => {
                 info!("source(section): {}", &path);
                 let resource = Section::from_str(&contents)?;
-                SectionSet::add(&tx, resource)?;
+                SectionSet::add(tx, resource)?;
             }
             ResourceType::Settings => {
                 info!("source(settings): {}", &path);
                 let resource = Settings::from_str(&contents)?;
-                SettingsSet::add(&tx, resource)?;
+                SettingsSet::add(tx, resource)?;
             }
             ResourceType::Sketch => {
                 info!("source(sketch): {}", &path);
                 let resource = Sketch::from_str(&contents)?;
-                SketchSet::add(&tx, resource)?;
+                SketchSet::add(tx, resource)?;
             }
             ResourceType::Tool => {
                 info!("source(tool): {}", &path);
                 let resource = Tool::from_str(&contents)?;
-                ToolSet::add(&tx, resource)?;
+                ToolSet::add(tx, resource)?;
             }
             ResourceType::Unknown(s) => {
                 warn!("unknown type '{}' {}", &s, &path);
@@ -158,7 +158,7 @@ fn is_hidden(entry: &DirEntry) -> bool {
     entry
         .file_name()
         .to_str()
-        .map(|s| s.starts_with("."))
+        .map(|s| s.starts_with('.'))
         .unwrap_or(false)
 }
 

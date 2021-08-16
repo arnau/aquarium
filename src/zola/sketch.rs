@@ -47,7 +47,7 @@ impl ZolaResource for Sketch {
     }
 
     fn path(&self) -> String {
-        format!("index.md")
+        "index.md".to_string()
     }
 
     fn resource_type(&self) -> Option<&ResourceType> {
@@ -133,8 +133,8 @@ impl TryFrom<&Row<'_>> for SketchBundle {
         };
         let metadata = Metadata {
             title: strip(&title),
-            description: body.as_ref().map(|s| strip(&s)),
-            slug: id.clone(),
+            description: body.as_ref().map(|s| strip(s)),
+            slug: id,
             date: Date::from_str(&date)?,
             template: "sketch.html".to_owned(),
             in_search_index: true,

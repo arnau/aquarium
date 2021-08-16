@@ -84,10 +84,10 @@ impl fmt::Display for Project {
         let yaml = serde_yaml::to_string(&metadata).expect("metadata to encode as yaml");
 
         write!(f, "{}", yaml)?;
-        write!(f, "---\n")?;
-        write!(f, "# {}\n", &self.name)?;
-        write!(f, "\n{}\n\n", &self.summary)?;
-        write!(f, "<!-- body -->\n\n")?;
+        writeln!(f, "---")?;
+        writeln!(f, "# {}", &self.name)?;
+        writeln!(f, "\n{}\n", &self.summary)?;
+        writeln!(f, "<!-- body -->\n")?;
         write!(f, "{}", &self.body)
     }
 }
@@ -198,13 +198,13 @@ impl WriteCache for ProjectSet {
 
     fn add(tx: &Transaction, resource: Self::Item) -> Result<()> {
         let record = ProjectRecord::from(resource);
-        record.insert(&tx)?;
+        record.insert(tx)?;
 
         Ok(())
     }
 
     fn remove(tx: &Transaction, id: &str) -> Result<()> {
-        ProjectRecord::delete(&tx, id)
+        ProjectRecord::delete(tx, id)
     }
 }
 

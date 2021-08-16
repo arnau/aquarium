@@ -94,7 +94,7 @@ impl TryFrom<&Row<'_>> for Project {
             title,
             summary,
             status,
-            start_date: start_date.clone(),
+            start_date,
             end_date,
             source_url,
         };

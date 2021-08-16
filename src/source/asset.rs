@@ -104,13 +104,13 @@ impl WriteCache for AssetSet {
 
     fn add(tx: &Transaction, resource: Self::Item) -> Result<()> {
         let record = AssetRecord::try_from(resource)?;
-        record.insert(&tx)?;
+        record.insert(tx)?;
 
         Ok(())
     }
 
     fn remove(tx: &Transaction, id: &str) -> Result<()> {
-        AssetRecord::delete(&tx, id)
+        AssetRecord::delete(tx, id)
     }
 }
 

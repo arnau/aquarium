@@ -49,6 +49,10 @@ impl UpdateRecordSet {
         self.inner.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
+
     pub fn select(tx: &Transaction) -> Result<Self> {
         let mut inner = Vec::new();
         let mut stmt = tx.prepare(

@@ -4,7 +4,7 @@ use std::io::Write;
 use std::process::{Command, Stdio};
 
 /// Processes the given markdown text with tranformation rules such as generating dot diagrams from code blocks.
-pub fn enrich<'a>(text: &str) -> Result<String> {
+pub fn enrich(text: &str) -> Result<String> {
     let mut options = Options::empty();
     options.insert(Options::ENABLE_STRIKETHROUGH);
     options.insert(Options::ENABLE_TABLES);
@@ -14,13 +14,13 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
     // TODO: slurp into stack
     let mut list_depth: Option<usize> = None;
 
-    let mut parser = Parser::new_ext(text, options);
+    let parser = Parser::new_ext(text, options);
     let mut recipient = String::new();
 
-    while let Some(event) = parser.next() {
+    for event in parser {
         match event {
             Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(info))) => {
-                recipient.push_str("\n");
+                recipient.push('\n');
 
                 match info.as_ref() {
                     "dot" => {
@@ -51,7 +51,7 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                         recipient.push_str(&info);
                     }
                 }
-                recipient.push_str("\n");
+                recipient.push('\n');
                 stack.push(Tag::CodeBlock(CodeBlockKind::Fenced(info)));
             }
             Event::End(Tag::CodeBlock(CodeBlockKind::Fenced(info))) => {
@@ -69,9 +69,7 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                 stack.pop();
             }
             Event::Start(tag @ Tag::CodeBlock(CodeBlockKind::Indented)) => {
-                recipient.push_str("\n");
-                recipient.push_str("```");
-                recipient.push_str("\n");
+                recipient.push_str("\n```\n");
                 stack.push(tag);
             }
             Event::End(Tag::CodeBlock(CodeBlockKind::Indented)) => {
@@ -82,12 +80,12 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                 match stack.last() {
                     Some(Tag::CodeBlock(CodeBlockKind::Fenced(info))) => match info.as_ref() {
                         "dot" => {
-                            let svg = process_graphviz(&text)?;
+                            let svg = process_graphviz(text)?;
                             recipient.push_str(&svg);
                         }
                         "csv target=table" => {
                             recipient.push_str("!!!!\n");
-                            recipient.push_str(&text);
+                            recipient.push_str(text);
                             recipient.push_str("\n!!!!");
                         }
                         _ => {
@@ -95,7 +93,7 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                         }
                     },
                     _ => {
-                        recompose_sentence(&text, &mut recipient);
+                        recompose_sentence(text, &mut recipient);
                     }
                 };
             }
@@ -105,10 +103,10 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                 if recipient.ends_with("  ") {
                     recipient.pop();
                 }
-                recipient.push_str("`");
+                recipient.push('`');
                 recipient.push_str(&text);
-                recipient.push_str("`");
-                recipient.push_str(" ");
+                recipient.push('`');
+                recipient.push(' ');
             }
 
             Event::Start(tag) => {
@@ -124,7 +122,7 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                             stack.push(tag);
                         }
                         _ => {
-                            recipient.push_str("\n");
+                            recipient.push('\n');
                             stack.push(tag);
                         }
                     },
@@ -151,10 +149,10 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
 
                         // Sublists of ordered lists need an extra indenting space to compensate for the `.`.
                         if let Some(Tag::List(Some(_))) = stack.last() {
-                            depth.push_str(" ");
+                            depth.push(' ');
                         }
 
-                        if recipient.ends_with(" ") {
+                        if recipient.ends_with(' ') {
                             recipient.pop();
                         }
 
@@ -179,7 +177,7 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                         stack.push(tag);
                     }
                     Tag::Table(_) => {
-                        recipient.push_str("\n");
+                        recipient.push('\n');
                         stack.push(tag);
                     }
                     Tag::TableHead => {
@@ -191,7 +189,7 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                     Tag::TableCell => {}
                     Tag::Emphasis => {
                         stack.push(tag);
-                        recipient.push_str("_");
+                        recipient.push('_');
                     }
                     Tag::Strong => {
                         stack.push(tag);
@@ -203,13 +201,13 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                     }
                     Tag::Link(_kind, ref _url, ref _title) => {
                         stack.push(tag);
-                        recipient.push_str("[");
+                        recipient.push('[');
                     }
                     Tag::Image(_, url, _title) => {
                         recipient.push_str("![");
                         recipient.push_str("](");
                         recipient.push_str(&url);
-                        recipient.push_str(")");
+                        recipient.push(')');
                     }
                     _t => (),
                 };
@@ -218,7 +216,7 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
             Event::End(tag) => {
                 match tag {
                     Tag::Paragraph => {
-                        if recipient.ends_with(" ") {
+                        if recipient.ends_with(' ') {
                             recipient.pop();
                         }
 
@@ -227,14 +225,14 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                                 recipient.push_str("\n>");
                             }
                             _ => {
-                                recipient.push_str("\n");
+                                recipient.push('\n');
                                 stack.pop();
                             }
                         };
                     }
                     Tag::Heading(_) => {
                         recipient.pop();
-                        recipient.push_str("\n");
+                        recipient.push('\n');
                         stack.pop();
                     }
                     Tag::CodeBlock(_kind) => {
@@ -245,7 +243,7 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                     }
                     Tag::Table(_) => {
                         stack.pop();
-                        recipient.push_str("\n");
+                        recipient.push('\n');
                     }
                     Tag::TableHead => match stack.last() {
                         Some(Tag::Table(alignments)) => {
@@ -266,7 +264,7 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                     },
                     Tag::TableRow => {
                         recipient.pop();
-                        recipient.push_str("\n");
+                        recipient.push('\n');
                     }
                     Tag::TableCell => {
                         recipient.push_str("| ");
@@ -274,7 +272,7 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                     Tag::BlockQuote => {
                         // Removes the final '>' added by the last paragraph in the blockquote.
                         recipient.pop();
-                        recipient.push_str("\n");
+                        recipient.push('\n');
                         stack.pop();
                     }
                     Tag::List(_) => {
@@ -292,7 +290,7 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                         if list_depth.is_none() {
                             // Trims hanging space.
                             recipient.pop();
-                            recipient.push_str("\n");
+                            recipient.push('\n');
                         }
                     }
                     Tag::Item => {}
@@ -319,7 +317,7 @@ pub fn enrich<'a>(text: &str) -> Result<String> {
                         stack.pop();
                     }
                     Tag::Image(_, _, _) => {
-                        recipient.push_str(" ");
+                        recipient.push(' ');
                     }
                 };
             }
@@ -360,36 +358,24 @@ fn process_graphviz(input: &str) -> Result<String> {
 
 /// Recomposing paragraph chunks ensuring spaces are correct.
 fn recompose_sentence(chunk: &str, recipient: &mut String) {
+    let start_edge_chars = ['.', ',', ';', ']', ')', '}', '”', '‘'];
+    let end_edge_chars = ['[', '(', '{', '“', '‘'];
+
     let text = chunk.trim();
+    let starts_with_edge = start_edge_chars.iter().any(|c| text.starts_with(*c));
+    let ends_with_edge = end_edge_chars.iter().any(|c| text.ends_with(*c));
 
     // dbg!(&recipient);
     // dbg!(&text);
 
-    if text.starts_with(".")
-        || text.starts_with(",")
-        || text.starts_with(";")
-        || text.starts_with("]")
-        || text.starts_with(")")
-        || text.starts_with("}")
-        || text.starts_with("“")
-        || text.starts_with("”")
-        || text.starts_with("‘")
-        || text.starts_with("”")
-    {
-        if recipient.ends_with(" ") {
-            recipient.pop();
-        }
+    if starts_with_edge && recipient.ends_with(' ') {
+        recipient.pop();
     }
 
     recipient.push_str(text);
 
-    if !(text.ends_with("[")
-        || text.ends_with("(")
-        || text.ends_with("{")
-        || text.ends_with("“")
-        || text.ends_with("‘"))
-    {
-        recipient.push_str(" ");
+    if !ends_with_edge {
+        recipient.push(' ');
     }
     // dbg!(&recipient);
 }

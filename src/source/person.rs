@@ -42,7 +42,7 @@ impl FromStr for Person {
     type Err = anyhow::Error;
 
     fn from_str(blob: &str) -> Result<Self, Self::Err> {
-        let person: Person = toml::from_str(&blob)?;
+        let person: Person = toml::from_str(blob)?;
 
         Ok(person)
     }
@@ -70,7 +70,7 @@ impl From<Person> for PersonRecord {
 fn from_record(tx: &Transaction, record: PersonRecord) -> Result<Person> {
     let accounts: Vec<ServiceAccount> = ServiceAccountRecordSet::select(tx, record.id.clone())?
         .into_iter()
-        .map(|account| ServiceAccount::from(account))
+        .map(ServiceAccount::from)
         .collect();
     let resource = Person {
         _type: "person".to_string(),
@@ -124,17 +124,17 @@ impl WriteCache for PersonSet {
     fn add(tx: &Transaction, resource: Self::Item) -> Result<()> {
         for account in &resource.accounts {
             let record = ServiceAccountRecord::from((resource.id.as_str(), account));
-            record.insert(&tx)?;
+            record.insert(tx)?;
         }
 
         let record = PersonRecord::from(resource);
-        record.insert(&tx)?;
+        record.insert(tx)?;
 
         Ok(())
     }
 
     fn remove(tx: &Transaction, id: &str) -> Result<()> {
-        PersonRecord::delete(&tx, id)
+        PersonRecord::delete(tx, id)
     }
 }
 

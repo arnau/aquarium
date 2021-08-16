@@ -34,7 +34,7 @@ impl Cache {
 
         let bootstrap = include_str!("../sql/cache.sql");
 
-        conn.execute_batch(&bootstrap)?;
+        conn.execute_batch(bootstrap)?;
 
         Ok(Cache {
             timestamp,

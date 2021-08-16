@@ -43,8 +43,8 @@ impl FromStr for Tool {
 
     fn from_str(blob: &str) -> Result<Self, Self::Err> {
         let (frontmatter, body) = take_frontmatter(blob)?;
-        let metadata: Metadata = serde_yaml::from_str(&frontmatter)?;
-        let summary = if body.trim().len() == 0 {
+        let metadata: Metadata = serde_yaml::from_str(frontmatter)?;
+        let summary = if body.trim().is_empty() {
             None
         } else {
             Some(body.trim().to_string())
@@ -65,7 +65,7 @@ impl fmt::Display for Tool {
         let yaml = serde_yaml::to_string(&metadata).expect("metadata to encode as yaml");
 
         write!(f, "{}", yaml)?;
-        write!(f, "---\n")?;
+        writeln!(f, "---")?;
         if let Some(summary) = &self.summary {
             write!(f, "{}", summary)?;
         }
@@ -157,13 +157,13 @@ impl WriteCache for ToolSet {
 
     fn add(tx: &Transaction, resource: Self::Item) -> Result<()> {
         let record = ToolRecord::from(resource);
-        record.insert(&tx)?;
+        record.insert(tx)?;
 
         Ok(())
     }
 
     fn remove(tx: &Transaction, id: &str) -> Result<()> {
-        ToolRecord::delete(&tx, id)
+        ToolRecord::delete(tx, id)
     }
 }
 

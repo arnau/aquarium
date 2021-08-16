@@ -45,6 +45,12 @@ impl Hasher {
     }
 }
 
+impl Default for Hasher {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Interface to implement tagged hashing a-la objecthash.
 pub trait Digest {
     fn digest(&self, hasher: &mut Hasher);
@@ -103,7 +109,7 @@ impl<T: Digest> Digest for Option<T> {
             }
 
             Some(v) => {
-                &v.digest(hasher);
+                v.digest(hasher);
             }
         }
     }

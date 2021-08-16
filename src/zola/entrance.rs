@@ -23,7 +23,7 @@ impl ZolaResource for Entrance {
     }
 
     fn path(&self) -> String {
-        format!("_index.md")
+        "_index.md".to_string()
     }
 
     fn resource_type(&self) -> Option<&ResourceType> {
@@ -100,8 +100,8 @@ impl TryFrom<UpdateRecord> for Update {
 }
 
 pub fn find(tx: &Transaction) -> Result<Option<Entrance>> {
-    if let Some(record) = EntranceRecord::select(&tx, "entrance")? {
-        let latest_updates = amass_updates(&tx)?;
+    if let Some(record) = EntranceRecord::select(tx, "entrance")? {
+        let latest_updates = amass_updates(tx)?;
         let extra = Extra {
             id: record.id,
             latest_updates,

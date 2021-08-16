@@ -143,13 +143,13 @@ impl WriteCache for SettingsSet {
 
     fn add(tx: &Transaction, resource: Self::Item) -> Result<()> {
         let record = SettingsRecord::try_from(resource)?;
-        record.insert(&tx)?;
+        record.insert(tx)?;
 
         Ok(())
     }
 
     fn remove(tx: &Transaction, id: &str) -> Result<()> {
-        SettingsRecord::delete(&tx, id)
+        SettingsRecord::delete(tx, id)
     }
 }
 

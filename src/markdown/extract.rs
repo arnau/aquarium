@@ -72,7 +72,7 @@ pub enum ExtractError {
 }
 
 /// Extracts the title (i.e. first h1) from a markdown text.
-pub fn take_title<'a>(text: &str) -> Result<String> {
+pub fn take_title(text: &str) -> Result<String> {
     let parser = Parser::new(text);
     let mut recipient = String::new();
     let mut extract = Extract::new(parser, &mut recipient);
@@ -86,7 +86,7 @@ pub fn take_title<'a>(text: &str) -> Result<String> {
                 extract.activate();
             }
             Event::End(Tag::Heading(1)) => {
-                &extract.finish();
+                extract.finish();
             }
             Event::Start(Tag::Emphasis) | Event::End(Tag::Emphasis) => {
                 if extract.is_active() {

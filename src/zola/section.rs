@@ -88,7 +88,7 @@ impl TryFrom<SectionRecord> for Section {
         };
         let metadata = Metadata {
             title: record.title,
-            description: record.body.as_ref().map(|s| strip(&s)),
+            description: record.body.as_ref().map(|s| strip(s)),
             slug: record.id.clone(),
             template: format!("{}.html", &record.id),
             sort_by: "date".to_string(),
@@ -107,7 +107,7 @@ impl TryFrom<SectionRecord> for Section {
 }
 
 pub fn amass(tx: &Transaction) -> Result<Vec<Section>> {
-    let records = SectionRecordSet::select(&tx)?;
+    let records = SectionRecordSet::select(tx)?;
     let mut result = Vec::new();
 
     for record in records {

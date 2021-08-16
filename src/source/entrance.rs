@@ -38,8 +38,8 @@ impl FromStr for Entrance {
 
     fn from_str(blob: &str) -> Result<Self, Self::Err> {
         let (frontmatter, body) = take_frontmatter(blob)?;
-        let metadata: Metadata = serde_yaml::from_str(&frontmatter)?;
-        let body = if body.trim().len() == 0 {
+        let metadata: Metadata = serde_yaml::from_str(frontmatter)?;
+        let body = if body.trim().is_empty() {
             None
         } else {
             Some(body.trim().to_string())
@@ -58,7 +58,7 @@ impl fmt::Display for Entrance {
         let yaml = serde_yaml::to_string(&metadata).expect("metadata to encode as yaml");
 
         write!(f, "{}", yaml)?;
-        write!(f, "---\n")?;
+        writeln!(f, "---")?;
         if let Some(body) = self.body.as_ref() {
             write!(f, "{}", body)?;
         }
@@ -125,12 +125,12 @@ impl WriteCache for Entrance {
 
     fn add(tx: &Transaction, resource: Self::Item) -> Result<()> {
         let record = EntranceRecord::from(resource);
-        record.insert(&tx)?;
+        record.insert(tx)?;
 
         Ok(())
     }
 
     fn remove(tx: &Transaction, id: &str) -> Result<()> {
-        EntranceRecord::delete(&tx, id)
+        EntranceRecord::delete(tx, id)
     }
 }

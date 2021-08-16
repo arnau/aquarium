@@ -79,7 +79,7 @@ impl TryFrom<&Row<'_>> for Note {
             guest: row.get(7)?,
         };
         let extra = Extra {
-            id: id.clone(),
+            id,
             title: title.clone(),
             summary: summary.clone(),
             author,

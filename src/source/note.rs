@@ -73,10 +73,10 @@ impl fmt::Display for Note {
         let yaml = serde_yaml::to_string(&metadata).expect("note metadata to encode as yaml");
 
         write!(f, "{}", yaml)?;
-        write!(f, "---\n")?;
-        write!(f, "# {}\n", &self.title)?;
-        write!(f, "\n{}\n\n", &self.summary)?;
-        write!(f, "<!-- body -->\n\n")?;
+        writeln!(f, "---")?;
+        writeln!(f, "# {}", &self.title)?;
+        writeln!(f, "\n{}\n", &self.summary)?;
+        writeln!(f, "<!-- body -->\n")?;
         write!(f, "{}", &self.body)
     }
 }
@@ -172,13 +172,13 @@ impl WriteCache for NoteSet {
 
     fn add(tx: &Transaction, resource: Self::Item) -> Result<()> {
         let record = NoteRecord::from(resource);
-        record.insert(&tx)?;
+        record.insert(tx)?;
 
         Ok(())
     }
 
     fn remove(tx: &Transaction, id: &str) -> Result<()> {
-        NoteRecord::delete(&tx, id)
+        NoteRecord::delete(tx, id)
     }
 }
 

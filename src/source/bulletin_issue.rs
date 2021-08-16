@@ -46,7 +46,7 @@ impl FromStr for Bulletin {
     type Err = anyhow::Error;
 
     fn from_str(blob: &str) -> Result<Self, Self::Err> {
-        let resource: Bulletin = toml::from_str(&blob)?;
+        let resource: Bulletin = toml::from_str(blob)?;
 
         Ok(resource)
     }
@@ -75,7 +75,7 @@ fn from_record(tx: &Transaction, record: BulletinRecord) -> Result<Bulletin> {
     let entries: Vec<BulletinEntry> =
         BulletinEntryRecordSet::select(tx, Some(record.id.to_string()))?
             .into_iter()
-            .map(|account| BulletinEntry::from(account))
+            .map(BulletinEntry::from)
             .collect();
     let resource = Bulletin {
         _type: "bulletin".to_string(),
@@ -129,17 +129,17 @@ impl WriteCache for BulletinSet {
     fn add(tx: &Transaction, resource: Self::Item) -> Result<()> {
         for entry in &resource.entries {
             let record = BulletinEntryRecord::from((Some(resource.id.clone()), entry));
-            record.insert(&tx)?;
+            record.insert(tx)?;
         }
 
         let record = BulletinRecord::from(resource);
-        record.insert(&tx)?;
+        record.insert(tx)?;
 
         Ok(())
     }
 
     fn remove(tx: &Transaction, id: &str) -> Result<()> {
-        BulletinRecord::delete(&tx, id)
+        BulletinRecord::delete(tx, id)
     }
 }
 

@@ -108,7 +108,7 @@ impl AuxRecordSet for BulletinEntryRecordSet {
         let clause = if let Some(id) = id {
             format!("issue_id = '{}'", id)
         } else {
-            format!("issue_id is NULL")
+            "issue_id is NULL".to_string()
         };
         let query = format!(
             r#"

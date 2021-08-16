@@ -145,17 +145,17 @@ impl WriteCache for SketchSet {
                 sketch_id: resource.id.clone(),
             };
 
-            record.insert(&tx)?;
+            record.insert(tx)?;
         }
 
         let record = SketchRecord::try_from(resource)?;
-        record.insert(&tx)?;
+        record.insert(tx)?;
 
         Ok(())
     }
 
     fn remove(tx: &Transaction, id: &str) -> Result<()> {
-        SketchRecord::delete(&tx, id)
+        SketchRecord::delete(tx, id)
     }
 }
 
