@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::Clap;
+use clap::Parser;
 use std::path::PathBuf;
 
 use crate::cache::{Cache, Strategy};
@@ -8,7 +8,7 @@ use crate::source;
 use crate::zola;
 
 /// Manages bulletins
-#[derive(Debug, Clap)]
+#[derive(Debug, Parser)]
 pub struct Cmd {
     /// Cache path.
     #[clap(long, value_name = "path", default_value = ":memory:")]

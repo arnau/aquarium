@@ -1,16 +1,16 @@
-use clap::{AppSettings, Clap};
+use clap::{AppSettings, Parser};
 use std::io::Write;
 
 use aquarium::cli;
 
-#[derive(Debug, Clap)]
+#[derive(Debug, Parser)]
 enum Subcommand {
     #[clap(alias = "b")]
     Build(cli::build::Cmd),
     Clean(cli::clean::Cmd),
 }
 
-#[derive(Debug, Clap)]
+#[derive(Debug, Parser)]
 #[clap(name = "wb", version, global_setting(AppSettings::ColoredHelp))]
 struct Cli {
     #[clap(subcommand)]

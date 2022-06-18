@@ -1,10 +1,10 @@
 use anyhow::Result;
-use clap::Clap;
+use clap::Parser;
 use std::fs;
 use std::path::PathBuf;
 
 /// Cleans the artefacts created by the build command.
-#[derive(Debug, Clap)]
+#[derive(Debug, Parser)]
 pub struct Cmd {
     /// Cache path. If not provided it won't attempt to remove it.
     #[clap(long, value_name = "path")]
