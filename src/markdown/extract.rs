@@ -1,5 +1,5 @@
 use anyhow::Result;
-use pulldown_cmark::{escape::StrWrite, Event, Parser, Tag};
+use pulldown_cmark::{escape::StrWrite, Event, Parser, Tag, HeadingLevel};
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -79,13 +79,13 @@ pub fn take_title(text: &str) -> Result<String> {
 
     while let Some(event) = extract.next() {
         match event {
-            Event::Start(Tag::Heading(1)) => {
+            Event::Start(Tag::Heading(HeadingLevel::H1, _, _)) => {
                 if extract.is_done() {
                     break;
                 }
                 extract.activate();
             }
-            Event::End(Tag::Heading(1)) => {
+            Event::End(Tag::Heading(HeadingLevel::H1, _, _)) => {
                 extract.finish();
             }
             Event::Start(Tag::Emphasis) | Event::End(Tag::Emphasis) => {

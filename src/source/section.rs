@@ -64,6 +64,7 @@ impl fmt::Display for Section {
         let metadata = Metadata::from(self);
         let yaml = serde_yaml::to_string(&metadata).expect("metadata to encode as yaml");
 
+        writeln!(f, "---")?;
         write!(f, "{}", yaml)?;
         writeln!(f, "---")?;
         if let Some(body) = self.body.as_ref() {

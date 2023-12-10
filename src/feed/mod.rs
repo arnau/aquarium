@@ -1,7 +1,7 @@
 //! This module covers both the general feed.
 
-use anyhow::{anyhow, Result};
-use chrono::{DateTime, NaiveDate, Utc};
+use anyhow::Result;
+use chrono::{NaiveDate, Utc, TimeZone};
 use rss::{Channel, ChannelBuilder, Guid, ItemBuilder};
 use std::fs::File;
 use std::path::Path;
@@ -44,7 +44,8 @@ fn build(tx: &Transaction) -> Result<Channel> {
         let summary: Option<String> = row.get(2)?;
         let section: String = row.get(3)?;
         let date: String = row.get(4)?;
-        let pub_date = DateTime::<Utc>::from_utc(NaiveDate::from_str(&date)?.and_hms(0, 0, 0), Utc);
+        // let pub_date = DateTime::<Utc>::from_utc(NaiveDate::from_str(&date)?.and_hms(0, 0, 0), Utc);
+        let pub_date = Utc.from_utc_datetime(&NaiveDate::from_str(&date)?.and_hms_opt(0, 0, 0).unwrap());
         let url = format!("{}/{}/{}", &settings.url, &section, &id);
         let mut guid = Guid::default();
         guid.set_value(&url);
@@ -56,8 +57,7 @@ fn build(tx: &Transaction) -> Result<Channel> {
             .link(url.clone())
             .guid(guid)
             .pub_date(pub_date.to_rfc2822())
-            .build()
-            .map_err(|err| anyhow!(err))?;
+            .build();
 
         items.push(item);
     }
@@ -70,8 +70,7 @@ fn build(tx: &Transaction) -> Result<Channel> {
         .language("en".to_string())
         .generator("Aquarium".to_string())
         .items(items)
-        .build()
-        .map_err(|err| anyhow!(err))?;
+        .build();
 
     Ok(channel)
 }

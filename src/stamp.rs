@@ -114,7 +114,9 @@ mod tests {
 
     #[test]
     fn des_toml() -> Result<()> {
-        let raw = "title = \"Test\"\ndate = 2021-01-02\n";
+        let raw = r#"title = "Test"
+date = "2021-01-02"
+"#;
         let test: Test = toml::from_str(raw)?;
 
         assert_eq!(&test.date.to_string(), "2021-01-02");

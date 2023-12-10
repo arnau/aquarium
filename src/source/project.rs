@@ -83,6 +83,7 @@ impl fmt::Display for Project {
         let metadata = Metadata::from(self);
         let yaml = serde_yaml::to_string(&metadata).expect("metadata to encode as yaml");
 
+        writeln!(f, "---")?;
         write!(f, "{}", yaml)?;
         writeln!(f, "---")?;
         writeln!(f, "# {}", &self.name)?;

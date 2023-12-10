@@ -12,7 +12,7 @@ lazy_static! {
         ^\s*---\s*\n\s*type:\s*(?P<yaml_hint>\S+)\s*\n
         |
         # TOML
-        ^\s*type\s*=\s*"(?P<toml_hint>\S+)"\s*\n
+        \s*type\s*=\s*"(?P<toml_hint>\S+)"\s*
     "#
     )
     .unwrap();
@@ -138,6 +138,21 @@ id = "xxx"
         let actual = ResourceType::from_hint(blob)?;
 
         assert_eq!(actual, ResourceType::Person);
+
+        Ok(())
+    }
+
+    #[test]
+    fn bulletin_hint() -> Result<()> {
+        let blob = r#"
+id = "2023-W49"
+type = "bulletin"
+"#;
+        let actual = ResourceType::from_hint(blob);
+
+        dbg!(&actual);
+
+        assert_eq!(actual?, ResourceType::Bulletin);
 
         Ok(())
     }

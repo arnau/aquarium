@@ -126,7 +126,7 @@ pub fn enrich(text: &str) -> Result<String> {
                             stack.push(tag);
                         }
                     },
-                    Tag::Heading(level) => {
+                    Tag::Heading(level, _, _) => {
                         let symbol = format!("\n{} ", "#".repeat(level as usize));
                         recipient.push_str(&symbol);
                         stack.push(tag);
@@ -230,7 +230,7 @@ pub fn enrich(text: &str) -> Result<String> {
                             }
                         };
                     }
-                    Tag::Heading(_) => {
+                    Tag::Heading(_, _, _) => {
                         recipient.pop();
                         recipient.push('\n');
                         stack.pop();

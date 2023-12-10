@@ -10,7 +10,6 @@ use super::BulletinEntry;
 use crate::cache::records::*;
 use crate::cache::{ReadCache, Transaction, WriteCache};
 use crate::checksum::{Digest, Hasher};
-use crate::stamp::Date;
 use crate::{Resource, ResourceSet};
 
 /// A bulletin issue resource.
@@ -19,7 +18,7 @@ pub struct Bulletin {
     #[serde(rename = "type")]
     _type: String,
     id: String,
-    publication_date: Date,
+    publication_date: String,
     #[serde(deserialize_with = "super::de_trim")]
     summary: String,
     entries: Vec<BulletinEntry>,
@@ -80,7 +79,7 @@ fn from_record(tx: &Transaction, record: BulletinRecord) -> Result<Bulletin> {
     let resource = Bulletin {
         _type: "bulletin".to_string(),
         id: record.id,
-        publication_date: Date::from_str(&record.publication_date)?,
+        publication_date: record.publication_date,
         summary: record.summary,
         entries,
     };
@@ -175,7 +174,7 @@ mod tests {
     fn full_cycle() -> Result<()> {
         let raw = r#"type = "bulletin"
 id = "2021-W01"
-publication_date = 2021-01-10
+publication_date = "2021-01-10"
 summary = "This week has been about preql, sqlite, web component styling, apache arrow and hexagonal grids."
 
 [[entries]]

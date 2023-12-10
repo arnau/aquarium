@@ -72,6 +72,7 @@ impl fmt::Display for Note {
         let metadata = Metadata::from(self);
         let yaml = serde_yaml::to_string(&metadata).expect("note metadata to encode as yaml");
 
+        writeln!(f, "---")?;
         write!(f, "{}", yaml)?;
         writeln!(f, "---")?;
         writeln!(f, "# {}", &self.title)?;

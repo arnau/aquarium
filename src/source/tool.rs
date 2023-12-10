@@ -64,6 +64,7 @@ impl fmt::Display for Tool {
         let metadata = Metadata::from(self);
         let yaml = serde_yaml::to_string(&metadata).expect("metadata to encode as yaml");
 
+        writeln!(f, "---")?;
         write!(f, "{}", yaml)?;
         writeln!(f, "---")?;
         if let Some(summary) = &self.summary {
@@ -201,7 +202,7 @@ mod tests {
 type: tool
 id: acme
 name: Acme
-url: "https://acme.test/"
+url: https://acme.test/
 ---
 This is a dummy tool."#;
         let mut cache = Cache::connect(":memory:")?;

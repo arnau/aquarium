@@ -1,4 +1,4 @@
-use clap::{AppSettings, Parser};
+use clap::Parser;
 use std::io::Write;
 
 use aquarium::cli;
@@ -11,7 +11,7 @@ enum Subcommand {
 }
 
 #[derive(Debug, Parser)]
-#[clap(name = "wb", version, global_setting(AppSettings::ColoredHelp))]
+#[clap(name = "wb", version)]
 struct Cli {
     #[clap(subcommand)]
     subcommand: Subcommand,

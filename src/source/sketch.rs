@@ -10,7 +10,6 @@ use std::str::FromStr;
 use crate::cache::records::*;
 use crate::cache::{ReadCache, Transaction, WriteCache};
 use crate::checksum::{Digest, Hasher};
-use crate::stamp::Date;
 use crate::{Resource, ResourceSet};
 
 /// A sketch resource.
@@ -22,7 +21,7 @@ pub struct Sketch {
     title: String,
     asset: String,
     author: String,
-    publication_date: Date,
+    publication_date: String,
     tools: Vec<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     summary: Option<String>,
@@ -92,7 +91,7 @@ fn from_record(tx: &Transaction, record: SketchRecord) -> Result<Sketch> {
         title: record.title,
         asset: record.asset_id,
         author: record.author_id,
-        publication_date: Date::from_str(&record.publication_date)?,
+        publication_date: record.publication_date,
         summary: record.summary,
         tools,
     };
@@ -195,7 +194,7 @@ id = "calm-dragon"
 title = "Calm dragon"
 asset = "calm-dragon.png"
 author = "arnau"
-publication_date = 2017-09-29
+publication_date = "2017-09-29"
 tools = ["ipadpro"]
 summary = "Dragon head drawn with SketchBook's fountain pen  and colored with Sketches Pro's watercolor"
 "#;
